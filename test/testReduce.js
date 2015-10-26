@@ -7,19 +7,19 @@ describe('Reduce Security raw groups', function () {
   it('should reduce a list of raw groups that have a subset of a main group', function () {
     var groups = ['/content', '/content?contentTypeFilter=application%2Fmsword'];
 
-    assert.equal(['/content'], utils.reduceRawGroups(groups));
+    assert.deepEqual(utils.reduceRawGroups(groups), ['/content']);
   });
 
   it('should not reduce a list of permalinks in a set of raw groups', function () {
     var groups = ['/content', '/content/0a543170-f917-fe1d-925d-9f1bb20d3957'];
 
-    assert.equal(groups, utils.reduceRawGroups(groups));
+    assert.deepEqual(utils.reduceRawGroups(groups), groups);
   });
 
   it('should not reduce a list of raw groups that are not a subset of each other', function () {
     var groups = ['/content?contentTypeFilter=application%2Fmsword', '/content?contentTypeFilter=image%2Fpng'];
 
-    assert.equal(groups, utils.reduceRawGroups(groups));
+    assert.deepEqual(utils.reduceRawGroups(groups), groups);
   });
 
   it('should reduce a list of raw groups that have more than a subset of a main group and not ' +
@@ -27,21 +27,41 @@ describe('Reduce Security raw groups', function () {
     var groups = ['/content?contentTypeFilter=application%2Fmsword', '/content?contentTypeFilter=image%2Fpng',
       '/content?contentTypeFilter=application%2Fmsword&importance=HIGH'];
 
-    assert.equal(['/content?contentTypeFilter=application%2Fmsword', '/content?contentTypeFilter=image%2Fpng'],
-      utils.reduceRawGroups(groups));
+    assert.deepEqual(utils.reduceRawGroups(groups),
+      ['/content?contentTypeFilter=application%2Fmsword', '/content?contentTypeFilter=image%2Fpng']);
   });
 
   it('should reduce a list of raw groups that have more than a subset of a main group', function () {
     var groups = ['/content?type=DOCUMENT', '/content?type=DOCUMENT&importance=HIGH', '/content?nameContains=index',
       '/content'];
 
-    assert.equal(['/content'], utils.reduceRawGroups(groups));
+    assert.deepEqual(utils.reduceRawGroups(groups), ['/content']);
   });
 
   it('should reduce a list of raw groups that have subsets of a subset', function () {
     var groups = ['/content?type=DOCUMENT', '/content?type=DOCUMENT&importance=HIGH', '/content?nameContains=index'];
 
-    assert.equal(['/content?type=DOCUMENT', '/content?nameContains=index'], utils.reduceRawGroups(groups));
+    assert.deepEqual(utils.reduceRawGroups(groups), ['/content?type=DOCUMENT', '/content?nameContains=index']);
+  });
+
+  it('should not reduce a list of raw groups that do not have subsets of a subset', function () {
+    var groups = ['/content?type=DOCUMENT', '/content?type=DOCUMENT&language=nl',
+      '/content?language=nl&importance=HIGH', '/content?nameContains=index'];
+
+    assert.deepEqual(utils.reduceRawGroups(groups), ['/content?type=DOCUMENT', '/content?language=nl&importance=HIGH',
+      '/content?nameContains=index']);
+  });
+
+  it('should reduce a list of raw groups that belong to different resources', function () {
+    var groups = ['/content', '/content?language=nl', '/persons', '/persons?username=rodrigo.uroz'];
+
+    assert.deepEqual(utils.reduceRawGroups(groups), ['/content', '/persons']);
+  });
+
+  it('should reduce a list of raw groups that belong to different resources with different levels', function () {
+    var groups = ['/content', '/content?language=nl', '/persons?username=rodrigo.uroz'];
+
+    assert.deepEqual(utils.reduceRawGroups(groups), ['/content', '/persons?username=rodrigo.uroz']);
   });
 
 });
