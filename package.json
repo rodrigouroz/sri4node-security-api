@@ -1,6 +1,6 @@
 {
   "name": "sri4node-security-api",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A module to connect sri4node backends with the vsko security api",
   "main": "main.js",
   "scripts": {
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://ruroz@bitbucket.org/vskovzw/sri4node-security-api.git"
+    "url": "https://github.com/rodrigouroz/sri4node-security-api.git"
   },
   "keywords": [
     "sri4node",
@@ -17,7 +17,7 @@
   ],
   "author": "Rodrigo Uroz <rodrigouroz@gmail.com>",
   "license": "UNLICENSED",
-  "homepage": "https://bitbucket.org/vskovzw/sri4node-security-api#readme",
+  "homepage": "https://github.com/rodrigouroz/sri4node-security-api",
   "devDependencies": {
     "eslint": "^1.7.3",
     "mocha": "^2.3.3"
