@@ -57,7 +57,7 @@ exports = module.exports = function(config) {
       var url = config.VSKO_API_HOST + '/security/query/allowed?component=' + component;
       url += '&ability=read';
       url += '&person=/persons/' + me.uuid;
-      url += '&resource=' + element;
+      url += '&resource=' + element.$$meta.permalink;
 
       operation.attempt(function() {
         needle.get(url, reqOptions, responseHandlerSingleFn(operation, deferred, me, component));

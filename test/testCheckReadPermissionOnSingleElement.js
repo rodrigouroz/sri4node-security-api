@@ -31,7 +31,12 @@ describe('Check read permission on single element', function() {
   });
 
   it('should reject the read of an element with a proper error object', function() {
-    return security.checkReadPermissionOnSingleElement('/persons/b217e4e4-aae0-45df-9f62-7a68ec87b3fe', me, component).fail(function(error) {
+    var element = {
+      $$meta: {
+        permalink: '/persons/b217e4e4-aae0-45df-9f62-7a68ec87b3fe'
+      }
+    };
+    return security.checkReadPermissionOnSingleElement(element, me, component).fail(function(error) {
       assert.equal(403, error.statusCode);
       assert.equal('<h1>403 Forbidden</h1>', error.body);
 
@@ -39,7 +44,12 @@ describe('Check read permission on single element', function() {
   });
 
   it('should allow the read of an element', function() {
-    return security.checkReadPermissionOnSingleElement('/persons/4561ad63-960e-4d07-a463-66ce9f7f7085', me, component).then(function(result) {
+    var element = {
+      $$meta: {
+        permalink: '/persons/4561ad63-960e-4d07-a463-66ce9f7f7085'
+      }
+    };
+    return security.checkReadPermissionOnSingleElement(element, me, component).then(function(result) {
       assert(true);
 
     });
