@@ -5,9 +5,9 @@ var checkReadPermissionOnSingleElement = function (element, me, component) {
   return security.checkReadPermissionOnSingleElement(element, me, component);
 };
 
-var checkReadPermissionOnSet = function (element, req, me, component) {
+var checkReadPermissionOnSet = function (element, me, component) {
   'use strict';
-
+  return security.checkReadPermissionOnSet(element, me, component);
 };
 
 module.exports = function (configuration) {

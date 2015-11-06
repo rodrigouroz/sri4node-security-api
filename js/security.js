@@ -68,7 +68,12 @@ exports = module.exports = function(config) {
     },
     checkReadPermissionOnSet: function(element, me, component) {
 
+      var deferred = Q.defer();
+
       // TODO
+      deferred.reject();
+
+      return deferred.promise;
     }
   };
 
