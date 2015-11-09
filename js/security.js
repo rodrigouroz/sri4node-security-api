@@ -7,8 +7,6 @@ exports = module.exports = function(config) {
 
   'use strict';
 
-  var operation;
-
   var reqOptions = {
     username: config.USER,
     password: config.PASSWORD,
@@ -16,6 +14,16 @@ exports = module.exports = function(config) {
     json: true,
     proxy: common.getProxyOpts(config.VSKO_API_HOST)
   };
+
+  function constructOperation() {
+    return retry.operation({
+      retries: 3,
+      factor: 3,
+      minTimeout: 1000,
+      maxTimeout: 5 * 1000,
+      randomize: true
+    });
+  }
 
   function responseHandlerSingleFn(op, deferred, me, component) {
 
@@ -92,13 +100,7 @@ exports = module.exports = function(config) {
 
       var deferred = Q.defer();
 
-      operation = retry.operation({
-        retries: 3,
-        factor: 3,
-        minTimeout: 1000,
-        maxTimeout: 5 * 1000,
-        randomize: true
-      });
+      var operation = constructOperation();
 
       var url = config.VSKO_API_HOST + '/security/query/allowed?component=' + component;
       url += '&ability=read';
@@ -116,13 +118,7 @@ exports = module.exports = function(config) {
 
       var deferred = Q.defer();
 
-      operation = retry.operation({
-        retries: 3,
-        factor: 3,
-        minTimeout: 1000,
-        maxTimeout: 5 * 1000,
-        randomize: true
-      });
+      var operation = constructOperation();      
 
       var batchRequests = [];
       var i;
