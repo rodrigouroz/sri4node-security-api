@@ -1,4 +1,4 @@
-# About
+# About [![Build Status](https://travis-ci.org/rodrigouroz/sri4node-security-api.svg?branch=master)](https://travis-ci.org/rodrigouroz/sri4node-security-api)
 
 A module that connects a sri4node backend to the VSKO security api.
 
