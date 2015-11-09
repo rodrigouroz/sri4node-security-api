@@ -20,7 +20,7 @@ describe('Check read permission on single element', function() {
     me = {
       uuid: '6c0592b0-1ea6-4f38-9d08-31dc793062ba'
     };
-    // https://testapi.vsko.be/security/query/allowed?component=/security/components/persons-api&ability=read&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/persons/4561ad63-960e-4d07-a463-66ce9f7f7085
+    
     nock('https://testapi.vsko.be')
       .get('/security/query/allowed?component=/security/components/persons-api&ability=read&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/persons/b217e4e4-aae0-45df-9f62-7a68ec87b3fe')
       .reply(200, false);
