@@ -184,6 +184,22 @@ exports = module.exports = function (config, sri4nodeUtils) {
     return deferred.promise;
   }
 
+  // special case: If reduction of raw security groups yields /{type} -> allow
+  function checkSpecialCase(reducedGroups, permalink) {
+    var type = utils.getResourceTypeFromPermalink(permalink);
+    var i;
+
+    if (type) {
+      for (i = 0; i < reducedGroups.length; i++) {
+        if (reducedGroups[i] === type) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
   function checkAlterPermissionOnSet(permission, elements, me, component, database) {
 
     var i;
@@ -197,11 +213,17 @@ exports = module.exports = function (config, sri4nodeUtils) {
 
       for (i = 0; i < elements.length; i++) {
 
-        promises.push(checkAlterPermissionOnElement(permission, elements[i], reducedGroups, me, component, database));
+        // special case: If reduction of raw security groups yields /{type} -> allow
+        if (checkSpecialCase(reducedGroups, elements[i].path)) {
+          promises.push(Q.fcall(function () { return true; }));
+        } else {
+          promises.push(checkAlterPermissionOnElement(permission, elements[i].body, reducedGroups,
+            me, component, database));
+        }
+
       }
 
       Q.all(promises).then(function () {
-
         deferred.resolve();
       }).fail(function () {
         fail(deferred);

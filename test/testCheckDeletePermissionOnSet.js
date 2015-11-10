@@ -76,7 +76,10 @@ describe('Check delete permission on a set of elements', function () {
       deceased: false
     };
 
-    var elements = [person];
+    var elements = [{
+      path: '/persons/cf2dccb0-d944-4402-e044-d4856467bfb8',
+      body: person
+    }];
 
     var databaseMock = {};
 
@@ -120,7 +123,10 @@ describe('Check delete permission on a set of elements', function () {
 
     var elements = [];
 
-    elements.push(organisation);
+    elements.push({
+      path: '/organisations/c000eaea-9ce7-2590-e044-d4856467bfb8',
+      body: organisation
+    });
 
     organisation = {
       key: 'cf2dccb0-d944-4402-e044-d4856467bfb8',
@@ -149,7 +155,10 @@ describe('Check delete permission on a set of elements', function () {
       }
     };
 
-    elements.push(organisation);
+    elements.push({
+      path: '/organisations/cf2dccb0-d944-4402-e044-d4856467bfb8',
+      body: organisation
+    });
 
     var databaseMock = {};
 

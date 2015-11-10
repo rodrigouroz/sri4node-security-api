@@ -54,6 +54,15 @@ describe('Check update permission on a set of elements', function () {
     nock(configuration.VSKO_API_HOST)
       .get(url)
       .reply(200, response);
+
+    response = ['/content'];
+
+    url = '/security/query/resources/raw?component=/security/components/content-api';
+    url += '&ability=update&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba';
+
+    nock(configuration.VSKO_API_HOST)
+      .get(url)
+      .reply(200, response);
   });
 
   it('should reject the update of a set of elements with a proper error object', function () {
@@ -86,7 +95,10 @@ describe('Check update permission on a set of elements', function () {
       deceased: false
     };
 
-    var elements = [person];
+    var elements = [{
+      path: '/persons/cf2dccb0-d944-4402-e044-d4856467bfb8',
+      body: person
+    }];
 
     var databaseMock = {};
 
@@ -130,7 +142,10 @@ describe('Check update permission on a set of elements', function () {
 
     var elements = [];
 
-    elements.push(organisation);
+    elements.push({
+      path: '/organisations/c000eaea-9ce7-2590-e044-d4856467bfb8',
+      body: organisation
+    });
 
     organisation = {
       key: 'cf2dccb0-d944-4402-e044-d4856467bfb8',
@@ -159,7 +174,10 @@ describe('Check update permission on a set of elements', function () {
       }
     };
 
-    elements.push(organisation);
+    elements.push({
+      path: '/organisations/cf2dccb0-d944-4402-e044-d4856467bfb8',
+      body: organisation
+    });
 
     var databaseMock = {};
 
@@ -172,5 +190,47 @@ describe('Check update permission on a set of elements', function () {
       });
   });
 
+  it('should allow the update of a set of elements when the reduced group matches /{type}', function () {
+
+    var content = {
+      key: '0a543170-f917-fe1d-925d-9f1bb20d3957',
+      name: 'index.xhtml',
+      type: 'DOCUMENT',
+      created: '2012-11-22T15:42:16.717Z',
+      modified: '2012-11-22T15:42:17.018Z',
+      importance: 'HIGH',
+      language: 'nl',
+      attachments: [
+        {
+          name: 'index.xhtml',
+          type: 'CONTENT',
+          contentType: 'application/xhtml+xml',
+          externalUrl: 'https://testpincette.vsko.be/Website/index.xhtml',
+          href: '/content/0a543170-f917-fe1d-925d-9f1bb20d3957/index.xhtml'
+        },
+        {
+          name: 'index.txt',
+          type: 'CONTENT_AS_TEXT',
+          contentType: 'text/plain',
+          externalUrl: 'https://testpincette.vsko.be/Website/index.xhtml?type=text%2fplain',
+          href: '/content/0a543170-f917-fe1d-925d-9f1bb20d3957/index.txt'
+        }
+      ]
+    };
+
+    var elements = [{
+      path: '/content/cf2dccb0-d944-4402-e044-d4856467bfb8',
+      body: content
+    }];
+
+    var databaseMock = {};
+
+    security = require('../js/security')(configuration, sri4nodeUtilsMock(null));
+
+    return security.checkUpdatePermissionOnSet(elements, me, '/security/components/content-api',
+      databaseMock).then(function () {
+        assert(true);
+      });
+  });
 
 });
