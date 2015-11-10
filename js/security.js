@@ -133,12 +133,12 @@ exports = module.exports = function (config, sri4nodeUtils) {
     return deferred.promise;
   }
 
-  function checkAlterPermissionOnElement(permission, element, me, component, database) {
+  function checkAlterPermissionOnElement(permission, element, reducedGroups, me, component, database) {
 
     var promises = [];
     var deferred = Q.defer();
+    var groupDeferred;
     var query;
-    var reducedGroups;
     var groupUrl;
     var i;
 
@@ -154,35 +154,25 @@ exports = module.exports = function (config, sri4nodeUtils) {
       };
     }
 
-    // get resource groups from security
-    getResourceGroups(permission, me, component).then(function (groups) {
+    // for each group, convert to sql and check if the new element is there
+    for (i = 0; i < reducedGroups.length; i++) {
+      groupUrl = urlModule.parse(reducedGroups[i], true);
+      query = sri4nodeUtils.prepareSQL('check-resource-exists');
+      sri4nodeUtils.convertListResourceURLToSQL(groupUrl.pathname, groupUrl.query, false, database, query);
+      query.sql(' AND \"key\" = ').param(element.key);
+      groupDeferred = Q.defer();
+      promises.push(groupDeferred.promise);
+      sri4nodeUtils.executeSQL(database, query).then(checkElementExists(groupDeferred));
+    }
 
-      var groupDeferred;
+    // at least one succeded
+    Q.allSettled(promises).then(function (results) {
 
-      // use reduce functions
-      reducedGroups = utils.reduceRawGroups(groups);
-
-      // for each group, convert to sql and check if the new element is there
-      for (i = 0; i < reducedGroups.length; i++) {
-        groupUrl = urlModule.parse(reducedGroups[i], true);
-        query = sri4nodeUtils.prepareSQL('check-resource-exists');
-        sri4nodeUtils.convertListResourceURLToSQL(groupUrl.pathname, groupUrl.query, false, database, query);
-        query.sql(' AND \"key\" = ').param(element.key);
-        groupDeferred = Q.defer();
-        promises.push(groupDeferred.promise);
-        sri4nodeUtils.executeSQL(database, query).then(checkElementExists(groupDeferred));
+      if (results.some(function (result) { return result.state === 'fulfilled'; })) {
+        deferred.resolve();
+      } else {
+        deferred.reject();
       }
-
-      // at least one succeded
-      Q.allSettled(promises).then(function (results) {
-
-        if (results.some(function (result) { return result.state === 'fulfilled'; })) {
-          deferred.resolve();
-        } else {
-          deferred.reject();
-        }
-      });
-
     });
 
     return deferred.promise;
@@ -194,16 +184,23 @@ exports = module.exports = function (config, sri4nodeUtils) {
     var deferred = Q.defer();
     var promises = [];
 
-    for (i = 0; i < elements.length; i++) {
+    // get resource groups from security
+    getResourceGroups(permission, me, component).then(function (groups) {
 
-      promises.push(checkAlterPermissionOnElement(permission, elements[i], me, component, database));
-    }
+      var reducedGroups = utils.reduceRawGroups(groups);
 
-    Q.all(promises).then(function () {
+      for (i = 0; i < elements.length; i++) {
 
-      deferred.resolve();
-    }).fail(function () {
-      fail(deferred);
+        promises.push(checkAlterPermissionOnElement(permission, elements[i], reducedGroups, me, component, database));
+      }
+
+      Q.all(promises).then(function () {
+
+        deferred.resolve();
+      }).fail(function () {
+        fail(deferred);
+      });
+
     });
 
     return deferred.promise;

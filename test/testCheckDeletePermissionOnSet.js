@@ -36,10 +36,6 @@ describe('Check delete permission on a set of elements', function () {
       .get(url)
       .reply(200, response);
 
-    nock(configuration.VSKO_API_HOST)
-      .get(url)
-      .reply(200, response);
-
     response = ['/persons?q=rodri'];
 
     url = '/security/query/resources/raw?component=/security/components/persons-api';
