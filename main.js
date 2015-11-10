@@ -21,6 +21,22 @@ module.exports = function (configuration, sri4nodeUtils) {
         }
 
         return security.checkInsertPermissionOnSet(elements, me, component, database, req);
+      },
+      checkUpdatePermissionOnSet: function (database, elements, me, req) {
+        // sanitize, always pass an array to the check function
+        if (!Array.isArray(elements)) {
+          elements = [elements];
+        }
+
+        return security.checkUpdatePermissionOnSet(elements, me, component, database, req);
+      },
+      checkDeletePermissionOnSet: function (database, elements, me, req) {
+        // sanitize, always pass an array to the check function
+        if (!Array.isArray(elements)) {
+          elements = [elements];
+        }
+
+        return security.checkDeletePermissionOnSet(elements, me, component, database, req);
       }
     };
   };
