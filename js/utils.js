@@ -1,6 +1,19 @@
 var isHrefAPermalink = function (href) {
   'use strict';
-  return href.match(/^\/[a-z]*\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/);
+  return href.match(/^\/[a-z\/]*\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/);
+};
+
+var getResourceTypeFromPermalink = function (permalink) {
+  'use strict';
+  var groups;
+  if (isHrefAPermalink(permalink)) {
+    groups = permalink.match(/^(\/[a-z\/]*)\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/);
+    if (groups) {
+      return groups[1];
+    }
+  }
+
+  return null;
 };
 
 // splits an href into an object that has the attributes `resource` and `parts`
@@ -76,6 +89,7 @@ module.exports = {
 
     return rawGroups.filter(reduce);
 
-  }
+  },
+  getResourceTypeFromPermalink: getResourceTypeFromPermalink
 
 };
