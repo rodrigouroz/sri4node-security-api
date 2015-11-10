@@ -7,7 +7,7 @@ var isHrefAPermalink = function (href) {
 // `parts` is an array containing pairs of parameter=value
 var splitHrefIntoResourceAndParts = function (href) {
   'use strict';
-  var groups = href.match(/^(\/[a-z]*)(\?(.+))?$/);
+  var groups = href.match(/^(\/[a-z\/]*)(\?(.+))?$/);
   var result = {};
 
   if (groups) {

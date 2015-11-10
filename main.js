@@ -1,28 +1,26 @@
 var security;
 
-var checkReadPermissionOnSingleElement = function (element, me, component) {
+module.exports = function (configuration, sri4nodeUtils) {
   'use strict';
-  return security.checkReadPermissionOnSingleElement(element, me, component);
-};
 
-var checkReadPermissionOnSet = function (element, me, component) {
-  'use strict';
-  return security.checkReadPermissionOnSet(element, me, component);
-};
-
-module.exports = function (configuration) {
-
-  security = require('js/security')(configuration);
+  security = require('js/security')(configuration, sri4nodeUtils);
 
   return function (component) {
     return {
       checkReadPermission: function (database, elements, me) {
-        'use strict';
         if (elements.length === 1) {
-          return checkReadPermissionOnSingleElement(elements[0], me, component);
+          return security.checkReadPermissionOnSingleElement(elements[0], me, component);
         }
 
-        return checkReadPermissionOnSet(elements, me, component);
+        return security.checkReadPermissionOnSet(elements, me, component);
+      },
+      checkInsertPermission: function (database, elements, me, req) {
+        // sanitize, always pass an array to the check function
+        if (!Array.isArray(elements)) {
+          elements = [elements];
+        }
+
+        return security.checkInsertPermissionOnSet(elements, me, component, database, req);
       }
     };
   };

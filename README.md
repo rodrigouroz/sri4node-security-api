@@ -8,3 +8,7 @@ Installation is simple using npm :
 
     $ cd [your_project]
     $ npm install --save sri4node-security-api
+
+# Usage
+
+TODO
