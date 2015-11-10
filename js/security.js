@@ -158,11 +158,17 @@ exports = module.exports = function (config, sri4nodeUtils) {
     for (i = 0; i < reducedGroups.length; i++) {
       groupUrl = urlModule.parse(reducedGroups[i], true);
       query = sri4nodeUtils.prepareSQL('check-resource-exists');
-      sri4nodeUtils.convertListResourceURLToSQL(groupUrl.pathname, groupUrl.query, false, database, query);
-      query.sql(' AND \"key\" = ').param(element.key);
       groupDeferred = Q.defer();
       promises.push(groupDeferred.promise);
-      sri4nodeUtils.executeSQL(database, query).then(checkElementExists(groupDeferred));
+      // there is no guarantee that the group is mapped in the database
+      try {
+        sri4nodeUtils.convertListResourceURLToSQL(groupUrl.pathname, groupUrl.query, false, database, query);
+        query.sql(' AND \"key\" = ').param(element.key);
+        sri4nodeUtils.executeSQL(database, query).then(checkElementExists(groupDeferred));
+      } catch (e) {
+        groupDeferred.reject();
+      }
+
     }
 
     // at least one succeded
@@ -201,6 +207,9 @@ exports = module.exports = function (config, sri4nodeUtils) {
         fail(deferred);
       });
 
+    }).fail(function () {
+      // this should not happen as beveiliging must always response
+      fail(deferred);
     });
 
     return deferred.promise;
