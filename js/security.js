@@ -14,7 +14,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
     password: config.PASSWORD,
     open_timeout: 0, //eslint-disable-line
     json: true,
-    proxy: common.getProxyOpts(config.VSKO_API_HOST)
+    headers: common.getHeaders(config.VSKO_API_HOST)
   };
 
   function constructOperation() {

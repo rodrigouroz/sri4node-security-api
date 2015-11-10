@@ -1,13 +1,10 @@
 exports = module.exports = {
-  getProxyOpts: function (host) {
+  getHeaders: function (host) {
     'use strict';
-    var quotaguardUrl;
-    if (host.match('https*://test') || host.match('https*://acc')) {
-      quotaguardUrl = process.env.QUOTAGUARDSTATIC_URL; //eslint-disable-line
-      if (quotaguardUrl && quotaguardUrl !== '') {
-        return quotaguardUrl;
-      }
+    var headers = {};
+    if (host.match('https*://test')) {
+      headers['VSKO-ACCESSTOKEN-TEST'] = '152facf1-2df5-4489-82e2-1166f1ad94f3';
     }
-    return null;
+    return headers;
   }
 };
