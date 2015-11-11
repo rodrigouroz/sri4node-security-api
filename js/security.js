@@ -133,7 +133,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
     return deferred.promise;
   }
 
-  function checkAlterPermissionOnElement(permission, element, reducedGroups, me, component, database) {
+  function checkAlterPermissionOnElement(permission, key, reducedGroups, me, component, database) {
 
     var promises = [];
     var deferred = Q.defer();
@@ -163,7 +163,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
       // there is no guarantee that the group is mapped in the database
       try {
         sri4nodeUtils.convertListResourceURLToSQL(groupUrl.pathname, groupUrl.query, false, database, query);
-        query.sql(' AND \"key\" = ').param(element.key);
+        query.sql(' AND \"key\" = ').param(key);
         sri4nodeUtils.executeSQL(database, query).then(checkElementExists(groupDeferred));
       } catch (e) {
         groupDeferred.reject();
@@ -200,6 +200,14 @@ exports = module.exports = function (config, sri4nodeUtils) {
     return false;
   }
 
+  function getKey(permission, element) {
+    if (permission === 'delete') {
+      return utils.getKeyFromPermalink(element.body);
+    }
+
+    return element.body.key;
+  }
+
   function checkAlterPermissionOnSet(permission, elements, me, component, database) {
 
     var i;
@@ -217,7 +225,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
         if (checkSpecialCase(reducedGroups, elements[i].path)) {
           promises.push(Q.fcall(function () { return true; }));
         } else {
-          promises.push(checkAlterPermissionOnElement(permission, elements[i].body, reducedGroups,
+          promises.push(checkAlterPermissionOnElement(permission, getKey(permission, elements[i]), reducedGroups,
             me, component, database));
         }
 
