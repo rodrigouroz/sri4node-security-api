@@ -133,7 +133,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
     return deferred.promise;
   }
 
-  function checkAlterPermissionOnElement(permission, key, reducedGroups, me, component, database) {
+  function checkAlterPermissionOnElement(key, reducedGroups, me, component, database) {
 
     var promises = [];
     var deferred = Q.defer();
@@ -225,7 +225,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
         if (checkSpecialCase(reducedGroups, elements[i].path)) {
           promises.push(Q.fcall(function () { return true; }));
         } else {
-          promises.push(checkAlterPermissionOnElement(permission, getKey(permission, elements[i]), reducedGroups,
+          promises.push(checkAlterPermissionOnElement(getKey(permission, elements[i]), reducedGroups,
             me, component, database));
         }
 

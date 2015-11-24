@@ -3,7 +3,7 @@ var security;
 module.exports = function (configuration, sri4nodeUtils) {
   'use strict';
 
-  security = require('js/security')(configuration, sri4nodeUtils);
+  security = require('./js/security')(configuration, sri4nodeUtils);
 
   return function (component) {
     return {
@@ -22,7 +22,7 @@ module.exports = function (configuration, sri4nodeUtils) {
 
         return security.checkInsertPermissionOnSet(elements, me, component, database);
       },
-      checkUpdatePermissionOnSet: function (database, elements, me) {
+      checkUpdatePermission: function (database, elements, me) {
         // sanitize, always pass an array to the check function
         if (!Array.isArray(elements)) {
           elements = [elements];
@@ -30,7 +30,7 @@ module.exports = function (configuration, sri4nodeUtils) {
 
         return security.checkUpdatePermissionOnSet(elements, me, component, database);
       },
-      checkDeletePermissionOnSet: function (database, elements, me) {
+      checkDeletePermission: function (database, elements, me) {
         // sanitize, always pass an array to the check function
         if (!Array.isArray(elements)) {
           elements = [elements];
