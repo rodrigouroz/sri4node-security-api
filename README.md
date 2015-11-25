@@ -13,10 +13,10 @@ Installation is simple using npm :
 
 The module exposes a function for each one of the after functions available in a resource in sri4node:
 
-- `checkReadPermission`: an afterread function implementation (https://github.com/dimitrydhondt/sri4node#afterread)
-- `checkInsertPermission`: an afterinsert function implementation (https://github.com/dimitrydhondt/sri4node#afterupdate--afterinsert)
-- `checkUpdatePermission`: an afterupdate function implementation (https://github.com/dimitrydhondt/sri4node#afterupdate--afterinsert)
-- `checkDeletePermission`: an afterdelete function implementation (https://github.com/dimitrydhondt/sri4node#afterdelete)
+- `checkReadPermission`: an afterread function implementation [(Check afterread in sri4node)](https://github.com/dimitrydhondt/sri4node#afterread)
+- `checkInsertPermission`: an afterinsert function implementation [(Check afterinsert in sri4node)](https://github.com/dimitrydhondt/sri4node#afterupdate--afterinsert)
+- `checkUpdatePermission`: an afterupdate function implementation [(Check afterupdate in sri4node)](https://github.com/dimitrydhondt/sri4node#afterupdate--afterinsert)
+- `checkDeletePermission`: an afterdelete function implementation [(Check afterdelete in sri4node)](https://github.com/dimitrydhondt/sri4node#afterdelete)
 
 This modules connects to the sri security api and checks permissions on the actions performed. If there are no permissions the promise is
 rejected.
