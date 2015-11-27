@@ -34,67 +34,6 @@ exports = module.exports = function (config, sri4nodeUtils) {
     });
   }
 
-  function responseHandlerSingleFn(op, deferred) {
-
-    return function (err, response) {
-
-      if (err) {
-
-        if (op.retry(err)) {
-          return;
-        }
-
-        deferred.reject(err);
-      }
-
-      if (response.statusCode === 200 && response.body === true) {
-        deferred.resolve();
-      } else {
-        fail(deferred);
-      }
-
-    };
-  }
-
-  function responseHandlerBatchFn(op, deferred) {
-
-    return function (err, response) {
-
-      var i;
-      var failed;
-
-      if (err) {
-
-        if (op.retry(err)) {
-          return;
-        }
-
-        deferred.reject(err);
-      }
-
-      if (response.statusCode === 200) {
-
-        failed = [];
-
-        for (i = 0; i < response.body.length; i++) {
-          if (response.body[i].status !== 200 || !response.body[i].body) {
-            failed.push(response.body[i].href);
-          }
-        }
-
-        if (failed.length === 0) {
-          deferred.resolve();
-        } else {
-          fail(deferred);
-        }
-
-      } else {
-        fail(deferred);
-      }
-
-    };
-  }
-
   function getResourceGroups(permission, me, component) {
 
     var operation = constructOperation();
@@ -133,7 +72,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
     return deferred.promise;
   }
 
-  function checkAlterPermissionOnElement(key, reducedGroups, me, component, database) {
+  function checkDirectPermissionOnElement(key, reducedGroups, me, component, database) {
 
     var promises = [];
     var deferred = Q.defer();
@@ -208,10 +147,13 @@ exports = module.exports = function (config, sri4nodeUtils) {
     return element.body.key;
   }
 
-  function checkAlterPermissionOnSet(permission, elements, me, component, database) {
+  function checkDirectPermissionOnSet(permission, elements, me, component, database, deferred) {
 
     var i;
-    var deferred = Q.defer();
+
+    if (!deferred) {
+      deferred = Q.defer();
+    }
     var promises = [];
 
     // get resource groups from security
@@ -225,7 +167,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
         if (checkSpecialCase(reducedGroups, elements[i].path)) {
           promises.push(Q.fcall(function () { return true; }));
         } else {
-          promises.push(checkAlterPermissionOnElement(getKey(permission, elements[i]), reducedGroups,
+          promises.push(checkDirectPermissionOnElement(getKey(permission, elements[i]), reducedGroups,
             me, component, database));
         }
 
@@ -245,62 +187,99 @@ exports = module.exports = function (config, sri4nodeUtils) {
     return deferred.promise;
   }
 
-  return {
-    checkReadPermissionOnSingleElement: function (element, me, component) {
+  function responseHandlerBatchFn(op, deferred, permission, elements, me, component, database) {
 
-      var deferred = Q.defer();
+    return function (err, response) {
 
-      var operation = constructOperation();
-
-      var url = config.VSKO_API_HOST + '/security/query/allowed?component=' + component;
-      url += '&ability=read';
-      url += '&person=/persons/' + me.uuid;
-      url += '&resource=' + element.$$meta.permalink;
-
-      operation.attempt(function () {
-        needle.get(url, reqOptions, responseHandlerSingleFn(operation, deferred));
-      });
-
-      return deferred.promise;
-
-    },
-    checkReadPermissionOnSet: function (elements, me, component) {
-
-      var deferred = Q.defer();
-
-      var operation = constructOperation();
-
-      var batchRequests = [];
       var i;
-      var baseUrl = '/security/query/allowed?component=' + component;
-      baseUrl += '&ability=read';
-      baseUrl += '&person=/persons/' + me.uuid;
+      var failed;
 
-      for (i = 0; i < elements.length; i++) {
-        batchRequests.push({
-          verb: 'GET',
-          href: baseUrl + '&resource=' + elements[i].$$meta.permalink
-        });
+      if (err) {
+
+        if (op.retry(err)) {
+          return;
+        }
+
+        deferred.reject(err);
       }
 
-      operation.attempt(function () {
-        needle.put(config.VSKO_API_HOST + '/security/query/batch', batchRequests, reqOptions,
-          responseHandlerBatchFn(operation, deferred));
+      if (response.statusCode === 200) {
+
+        failed = [];
+
+        for (i = 0; i < response.body.length; i++) {
+          if (response.body[i].status !== 200 || !response.body[i].body) {
+            failed.push(response.body[i].href);
+          }
+        }
+
+        if (failed.length === 0) {
+          deferred.resolve();
+        } else {
+          // check direct (in current database transaction)
+          checkDirectPermissionOnSet(permission, elements, me, component, database, deferred);
+        }
+
+      } else {
+        // check direct (in current database transaction)
+        checkDirectPermissionOnSet(permission, elements, me, component, database, deferred);
+      }
+
+    };
+  }
+
+  function checkPermission(permission, elements, me, component, database) {
+    var deferred = Q.defer();
+
+    var operation = constructOperation();
+
+    var batchRequests = [];
+    var i;
+    var baseUrl = '/security/query/allowed?component=' + component;
+    baseUrl += '&ability=' + permission;
+    baseUrl += '&person=/persons/' + me.uuid;
+
+    for (i = 0; i < elements.length; i++) {
+      batchRequests.push({
+        verb: 'GET',
+        href: baseUrl + '&resource=' + elements[i].path
+      });
+    }
+
+    operation.attempt(function () {
+      needle.put(config.VSKO_API_HOST + '/security/query/batch', batchRequests, reqOptions,
+        responseHandlerBatchFn(operation, deferred, permission, elements, me, component, database));
+    });
+
+    return deferred.promise;
+  }
+
+  return {
+
+    checkReadPermissionOnSet: function (elements, me, component, database) {
+
+      elements = elements.map(function (element) {
+        return {
+          path: element.$$meta.permalink,
+          body: element
+        };
       });
 
-      return deferred.promise;
+      return checkPermission('read', elements, me, component, database);
     },
     checkInsertPermissionOnSet: function (elements, me, component, database) {
 
-      return checkAlterPermissionOnSet('create', elements, me, component, database);
+      // we check the permission directly because since it's a new resource the allowed
+      // query will return false
+      return checkDirectPermissionOnSet('create', elements, me, component, database);
     },
     checkUpdatePermissionOnSet: function (elements, me, component, database) {
 
-      return checkAlterPermissionOnSet('update', elements, me, component, database);
+      return checkPermission('update', elements, me, component, database);
     },
     checkDeletePermissionOnSet: function (elements, me, component, database) {
 
-      return checkAlterPermissionOnSet('delete', elements, me, component, database);
+      return checkPermission('delete', elements, me, component, database);
     }
   };
 

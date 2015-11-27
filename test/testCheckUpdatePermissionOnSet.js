@@ -15,6 +15,7 @@ describe('Check update permission on a set of elements', function () {
 
   var me;
   var response;
+  var batch;
 
   before(function () {
 
@@ -23,6 +24,85 @@ describe('Check update permission on a set of elements', function () {
     me = {
       uuid: '6c0592b0-1ea6-4f38-9d08-31dc793062ba'
     };
+
+    batch = [{
+      verb: 'GET',
+      href: '/security/query/allowed?component=/security/components/persons-api&ability=update' +
+        '&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/persons/cf2dccb0-d944-4402-e044-d4856467bfb8'
+    }];
+
+    response = [{
+      status: 200,
+      body: false,
+      href: '/security/query/allowed?component=/security/components/persons-api&ability=update' +
+        '&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/persons/cf2dccb0-d944-4402-e044-d4856467bfb8'
+    }];
+
+    nock(configuration.VSKO_API_HOST)
+      .put('/security/query/batch', batch)
+      .reply(200, response);
+
+    batch = [{
+      verb: 'GET',
+      href: '/security/query/allowed?component=/security/components/persons-api&ability=update' +
+        '&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/persons/df2dccb0-d944-4402-e044-d4856467bfb8'
+    }];
+
+    response = [{
+      status: 200,
+      body: false,
+      href: '/security/query/allowed?component=/security/components/persons-api&ability=update' +
+        '&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/persons/df2dccb0-d944-4402-e044-d4856467bfb8'
+    }];
+
+    nock(configuration.VSKO_API_HOST)
+      .put('/security/query/batch', batch)
+      .reply(200, response);
+
+    batch = [{
+      verb: 'GET',
+      href: '/security/query/allowed?component=/security/components/organisationalunits-api&ability=update&person=' +
+        '/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/organisations/c000eaea-9ce7-2590-e044-d4856467bfb8'
+    },
+    {
+      verb: 'GET',
+      href: '/security/query/allowed?component=/security/components/organisationalunits-api&ability=update&person=' +
+        '/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/organisations/cf2dccb0-d944-4402-e044-d4856467bfb8'
+    }];
+
+    response = [{
+      status: 200,
+      body: true,
+      href: '/security/query/allowed?component=/security/components/organisationalunits-api&ability=update&person=' +
+        '/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/organisations/c000eaea-9ce7-2590-e044-d4856467bfb8'
+    },
+    {
+      status: 200,
+      body: true,
+      href: '/security/query/allowed?component=/security/components/organisationalunits-api&ability=update&person=' +
+        '/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/organisations/cf2dccb0-d944-4402-e044-d4856467bfb8'
+    }];
+
+    nock(configuration.VSKO_API_HOST)
+      .put('/security/query/batch', batch)
+      .reply(200, response);
+
+    batch = [{
+      verb: 'GET',
+      href: '/security/query/allowed?component=/security/components/content-api&ability=update&person=' +
+        '/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/content/0a543170-f917-fe1d-925d-9f1bb20d3957'
+    }];
+
+    response = [{
+      status: 200,
+      body: false,
+      href: '/security/query/allowed?component=/security/components/content-api&ability=update&person=' +
+        '/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/content/0a543170-f917-fe1d-925d-9f1bb20d3957'
+    }];
+
+    nock(configuration.VSKO_API_HOST)
+      .put('/security/query/batch', batch)
+      .reply(200, response);
 
     response = [
       '/clbs',
@@ -50,6 +130,10 @@ describe('Check update permission on a set of elements', function () {
 
     url = '/security/query/resources/raw?component=/security/components/persons-api';
     url += '&ability=update&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba';
+
+    nock(configuration.VSKO_API_HOST)
+      .get(url)
+      .reply(200, response);
 
     nock(configuration.VSKO_API_HOST)
       .get(url)
@@ -182,7 +266,7 @@ describe('Check update permission on a set of elements', function () {
     var databaseMock = {};
 
     security = require('../js/security')(configuration,
-      sri4nodeUtilsMock(['c000eaea-9ce7-2590-e044-d4856467bfb8', 'cf2dccb0-d944-4402-e044-d4856467bfb8']));
+      sri4nodeUtilsMock([]));
 
     return security.checkUpdatePermissionOnSet(elements, me, '/security/components/organisationalunits-api',
       databaseMock).then(function () {
@@ -219,7 +303,7 @@ describe('Check update permission on a set of elements', function () {
     };
 
     var elements = [{
-      path: '/content/cf2dccb0-d944-4402-e044-d4856467bfb8',
+      path: '/content/0a543170-f917-fe1d-925d-9f1bb20d3957',
       body: content
     }];
 
@@ -228,6 +312,52 @@ describe('Check update permission on a set of elements', function () {
     security = require('../js/security')(configuration, sri4nodeUtilsMock(null));
 
     return security.checkUpdatePermissionOnSet(elements, me, '/security/components/content-api',
+      databaseMock).then(function () {
+        assert(true);
+      });
+  });
+
+  it('should allow the update of an element that the allowed query returns false but the direct ' +
+    'check in the database works', function () {
+
+    var person = {
+      key: 'df2dccb0-d944-4402-e044-d4856467bfb8',
+      firstName: 'Claire',
+      lastName: 'Heeren',
+      username: 'clairesheeren',
+      sex: 'FEMALE',
+      title: 'Mevrouw',
+      nationalIdentityNumber: '480602 246 65',
+      dateOfBirth: '1948-06-02',
+      bankAccounts: {},
+      phones: {
+        mobile: {
+          href: '/contactdetails/017539ef-c9c7-33d8-e050-fd0a029a7faa'
+        }
+      },
+      addresses: {
+        personal: {
+          href: '/contactdetails/017539ef-7f23-33d8-e050-fd0a029a7faa'
+        }
+      },
+      emailAddresses: {
+        primary: {
+          href: '/contactdetails/3094d9d5-33e1-40a5-a38a-8bb1a799babc'
+        }
+      },
+      deceased: false
+    };
+
+    var elements = [{
+      path: '/persons/df2dccb0-d944-4402-e044-d4856467bfb8',
+      body: person
+    }];
+
+    var databaseMock = {};
+
+    security = require('../js/security')(configuration, sri4nodeUtilsMock(['df2dccb0-d944-4402-e044-d4856467bfb8']));
+
+    return security.checkUpdatePermissionOnSet(elements, me, '/security/components/persons-api',
       databaseMock).then(function () {
         assert(true);
       });
