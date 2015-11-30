@@ -5,7 +5,7 @@ var sri4nodeUtilsMock = require('./sri4nodeUtilsMock');
 var configuration = {
   USER: '***REMOVED***',
   PASSWORD: '***REMOVED***',
-  VSKO_API_HOST: 'https://testapi.vsko.be'
+  SECURITY_API_HOST: 'https://testapi.vsko.be'
 };
 
 var security;
@@ -33,11 +33,11 @@ describe('Check read permission on a set of elements', function () {
     url = '/security/query/resources/raw?component=/security/components/persons-api';
     url += '&ability=read&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba';
 
-    nock(configuration.VSKO_API_HOST)
+    nock(configuration.SECURITY_API_HOST)
       .get(url)
       .reply(200, response);
 
-    nock(configuration.VSKO_API_HOST)
+    nock(configuration.SECURITY_API_HOST)
       .get(url)
       .reply(200, response);
 
@@ -72,7 +72,7 @@ describe('Check read permission on a set of elements', function () {
         '&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/persons/508990f2-1e89-424c-8e3a-fcc292e082ca'
     }];
 
-    nock(configuration.VSKO_API_HOST)
+    nock(configuration.SECURITY_API_HOST)
       .put('/security/query/batch', batch)
       .reply(200, response);
 
@@ -107,7 +107,7 @@ describe('Check read permission on a set of elements', function () {
         '&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/persons/3f7510b6-e2a0-435e-8939-875af7363b82'
     }];
 
-    nock(configuration.VSKO_API_HOST)
+    nock(configuration.SECURITY_API_HOST)
       .put('/security/query/batch', batch)
       .reply(200, response);
 
@@ -124,7 +124,7 @@ describe('Check read permission on a set of elements', function () {
         '&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/persons/017ea598-fcce-4165-a03b-759950ca48c4'
     }];
 
-    nock(configuration.VSKO_API_HOST)
+    nock(configuration.SECURITY_API_HOST)
       .put('/security/query/batch', batch)
       .reply(200, response);
 

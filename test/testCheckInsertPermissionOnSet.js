@@ -5,7 +5,7 @@ var sri4nodeUtilsMock = require('./sri4nodeUtilsMock');
 var configuration = {
   USER: '***REMOVED***',
   PASSWORD: '***REMOVED***',
-  VSKO_API_HOST: 'https://testapi.vsko.be'
+  SECURITY_API_HOST: 'https://testapi.vsko.be'
 };
 
 var security;
@@ -42,7 +42,7 @@ describe('Check insert permission on a set of elements', function () {
     url = '/security/query/resources/raw?component=/security/components/organisationalunits-api';
     url += '&ability=create&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba';
 
-    nock(configuration.VSKO_API_HOST)
+    nock(configuration.SECURITY_API_HOST)
       .get(url)
       .reply(200, response);
 
@@ -51,7 +51,7 @@ describe('Check insert permission on a set of elements', function () {
     url = '/security/query/resources/raw?component=/security/components/persons-api';
     url += '&ability=create&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba';
 
-    nock(configuration.VSKO_API_HOST)
+    nock(configuration.SECURITY_API_HOST)
       .get(url)
       .reply(200, response);
   });

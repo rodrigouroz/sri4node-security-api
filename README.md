@@ -33,9 +33,10 @@ This returns a construction function that must be invoked with these parameters:
 
 Where the `Config` object must have the following properties:
 
-- `USER` a valid username to connect to VSKO OAUTH
-- `PASSWORD` a valid password to connect to VSKO OAUTH
-- `VSKO_API_HOST` the host of the VSKO APIs
+- `USER` a valid username to connect to the Security API
+- `PASSWORD` a valid password to connect to the Security API
+- `SECURITY_API_HOST` the host of the Security API
+- `HEADERS` any extra header to be added to the requests to the Security API
 
 The second argument is the `utils` attribute of the sri4node backend [(Check General Utilities)](https://github.com/dimitrydhondt/sri4node#general-utilities)
 

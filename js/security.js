@@ -14,7 +14,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
     password: config.PASSWORD,
     open_timeout: 0, //eslint-disable-line
     json: true,
-    headers: common.getHeaders(config.VSKO_API_HOST)
+    headers: common.getHeaders(config)
   };
 
   function constructOperation() {
@@ -39,7 +39,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
     var operation = constructOperation();
     var deferred = Q.defer();
 
-    var url = config.VSKO_API_HOST + '/security/query/resources/raw?component=' + component;
+    var url = config.SECURITY_API_HOST + '/security/query/resources/raw?component=' + component;
     url += '&ability=' + permission;
     url += '&person=/persons/' + me.uuid;
 
@@ -247,7 +247,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
     }
 
     operation.attempt(function () {
-      needle.put(config.VSKO_API_HOST + '/security/query/batch', batchRequests, reqOptions,
+      needle.put(config.SECURITY_API_HOST + '/security/query/batch', batchRequests, reqOptions,
         responseHandlerBatchFn(operation, deferred, permission, elements, me, component, database));
     });
 

@@ -5,7 +5,7 @@ var sri4nodeUtilsMock = require('./sri4nodeUtilsMock');
 var configuration = {
   USER: '***REMOVED***',
   PASSWORD: '***REMOVED***',
-  VSKO_API_HOST: 'https://testapi.vsko.be'
+  SECURITY_API_HOST: 'https://testapi.vsko.be'
 };
 
 var security;
@@ -38,7 +38,7 @@ describe('Check delete permission on a set of elements', function () {
         '/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/persons/cf2dccb0-d944-4402-e044-d4856467bfb8'
     }];
 
-    nock(configuration.VSKO_API_HOST)
+    nock(configuration.SECURITY_API_HOST)
       .put('/security/query/batch', batch)
       .reply(200, response);
 
@@ -66,7 +66,7 @@ describe('Check delete permission on a set of elements', function () {
         '/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/organisations/cf2dccb0-d944-4402-e044-d4856467bfb8'
     }];
 
-    nock(configuration.VSKO_API_HOST)
+    nock(configuration.SECURITY_API_HOST)
       .put('/security/query/batch', batch)
       .reply(200, response);
 
@@ -94,7 +94,7 @@ describe('Check delete permission on a set of elements', function () {
         '/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/organisations/df2dccb0-d944-4402-e044-d4856467bfb8'
     }];
 
-    nock(configuration.VSKO_API_HOST)
+    nock(configuration.SECURITY_API_HOST)
       .put('/security/query/batch', batch)
       .reply(200, response);
 
@@ -106,7 +106,7 @@ describe('Check delete permission on a set of elements', function () {
     url = '/security/query/resources/raw?component=/security/components/organisationalunits-api';
     url += '&ability=delete&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba';
 
-    nock(configuration.VSKO_API_HOST)
+    nock(configuration.SECURITY_API_HOST)
       .get(url)
       .reply(200, response);
 
@@ -115,7 +115,7 @@ describe('Check delete permission on a set of elements', function () {
     url = '/security/query/resources/raw?component=/security/components/persons-api';
     url += '&ability=delete&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba';
 
-    nock(configuration.VSKO_API_HOST)
+    nock(configuration.SECURITY_API_HOST)
       .get(url)
       .reply(200, response);
   });
