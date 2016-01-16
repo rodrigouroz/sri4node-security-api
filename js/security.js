@@ -157,6 +157,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
     var promises = [];
 
     // get resource groups from security
+    console.log('Getting resource groups');
     getResourceGroups(permission, me, component).then(function (groups) {
 
       var reducedGroups = utils.reduceRawGroups(groups);
@@ -174,8 +175,10 @@ exports = module.exports = function (config, sri4nodeUtils) {
       }
 
       Q.all(promises).then(function () {
+        console.log('All checks finished. Permission granted');
         deferred.resolve();
       }).fail(function () {
+        console.log('All checks finished. Permission failed');
         fail(deferred);
       });
 
@@ -196,6 +199,8 @@ exports = module.exports = function (config, sri4nodeUtils) {
 
       if (err) {
 
+        console.log('Check error. Retrying...');
+
         if (op.retry(err)) {
           return;
         }
@@ -214,9 +219,11 @@ exports = module.exports = function (config, sri4nodeUtils) {
         }
 
         if (failed.length === 0) {
+          console.log('Response from Security. Continuing...');
           deferred.resolve();
         } else {
           // check direct (in current database transaction)
+          console.log('Response from Security contains a constraint, checking directly in the database');
           checkDirectPermissionOnSet(permission, elements, me, component, database, deferred);
         }
 
@@ -229,6 +236,9 @@ exports = module.exports = function (config, sri4nodeUtils) {
   }
 
   function checkPermission(permission, elements, me, component, database) {
+
+    console.log('Checking ' + permission + ' permission for ' + elements.length + ' elements');
+
     var deferred = Q.defer();
 
     var operation = constructOperation();
