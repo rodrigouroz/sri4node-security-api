@@ -9,13 +9,13 @@ module.exports = function (configuration, sri4nodeUtils) {
 
   return function (component) {
     return {
-      checkReadPermission: function (database, elements, me) {
+      checkReadPermission: function (database, elements, me, route) {
         // sanitize, always pass an array to the check function
         if (!Array.isArray(elements)) {
           elements = [elements];
         }
 
-        return security.checkReadPermissionOnSet(elements, me, component, database);
+        return security.checkReadPermissionOnSet(elements, me, component, database, route);
       },
       checkInsertPermission: function (database, elements, me) {
         // sanitize, always pass an array to the check function
@@ -25,15 +25,15 @@ module.exports = function (configuration, sri4nodeUtils) {
 
         return security.checkInsertPermissionOnSet(elements, me, component, database);
       },
-      checkUpdatePermission: function (database, elements, me) {
+      checkUpdatePermission: function (database, elements, me, route) {
         // sanitize, always pass an array to the check function
         if (!Array.isArray(elements)) {
           elements = [elements];
         }
 
-        return security.checkUpdatePermissionOnSet(elements, me, component, database);
+        return security.checkUpdatePermissionOnSet(elements, me, component, database, route);
       },
-      checkDeletePermission: function (req, res, database, me) {
+      checkDeletePermission: function (req, res, database, me, route) {
 
         // this is called from a secure function in sri4node, which is used on each Request
         // we only continue if the request is a DELETE operation
@@ -46,7 +46,7 @@ module.exports = function (configuration, sri4nodeUtils) {
           body: req.route.path
         };
 
-        return security.checkDeletePermissionOnSet(elements, me, component, database);
+        return security.checkDeletePermissionOnSet(elements, me, component, database, route);
       }
     };
   };

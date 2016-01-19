@@ -1,4 +1,4 @@
-var isHrefAPermalink = function (href) {
+var isPermalink = function (href) {
   'use strict';
   return href.match(/^\/[a-z\/]*\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/);
 };
@@ -7,7 +7,7 @@ var getPartFromPermalink = function (permalink, part) {
   'use strict';
   var groups;
 
-  if (isHrefAPermalink(permalink)) {
+  if (isPermalink(permalink)) {
     groups = permalink.match(/^(\/[a-z\/]*)\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/);
     if (part === 'resource') {
       return groups[1];
@@ -58,11 +58,38 @@ var removeIfPresent = function (set) {
 
 };
 
-var isSubSet = function (set, testSet) {
+var isStrictSubSet = function (set, testSet) {
   'use strict';
 
   // if after removing all the elements from the set we get an empty set, then testSet contains set
   return testSet && testSet.length < set.length && testSet.filter(removeIfPresent(set)).length === 0;
+};
+
+var isSubSet = function (set, testSet) {
+  'use strict';
+
+  // check if it contains the set
+  var equal = (set.length === testSet.length) && set.every(function (element, index) {
+    return element === testSet[index];
+  });
+
+  return equal || isStrictSubSet(set, testSet);
+};
+
+var containsSubSet = function (testGroup) {
+  'use strict';
+
+  // split a group (href) into its resource and its parts
+  var resourceAndParts = splitHrefIntoResourceAndParts(testGroup);
+
+  return function (group) {
+    var groupResourceAndParts = splitHrefIntoResourceAndParts(group);
+
+    // a group contains another if they belong to the same resource and the tested group is a subset of the group
+    return groupResourceAndParts.resource === resourceAndParts.resource &&
+      isStrictSubSet(resourceAndParts.parts, groupResourceAndParts.parts);
+  };
+
 };
 
 var contains = function (testGroup) {
@@ -70,7 +97,6 @@ var contains = function (testGroup) {
 
   // split a group (href) into its resource and its parts
   var resourceAndParts = splitHrefIntoResourceAndParts(testGroup);
-
 
   return function (group) {
     var groupResourceAndParts = splitHrefIntoResourceAndParts(group);
@@ -86,12 +112,12 @@ var reduce = function (group, index, array) {
   'use strict';
 
   // permalinks are not reduced
-  if (isHrefAPermalink(group)) {
+  if (isPermalink(group)) {
     return true;
   }
 
   // filter if there's at least one group that contains this one
-  return !array.some(contains(group));
+  return !array.some(containsSubSet(group));
 };
 
 module.exports = {
@@ -104,6 +130,8 @@ module.exports = {
 
   },
   getResourceTypeFromPermalink: getResourceTypeFromPermalink,
-  getKeyFromPermalink: getKeyFromPermalink
+  getKeyFromPermalink: getKeyFromPermalink,
+  contains: contains,
+  isPermalink: isPermalink
 
 };

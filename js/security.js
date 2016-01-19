@@ -84,7 +84,6 @@ exports = module.exports = function (config, sri4nodeUtils) {
     function checkElementExists(promise) {
 
       return function (result) {
-
         if (result.rows.length === 1) {
           promise.resolve();
         } else {
@@ -123,20 +122,21 @@ exports = module.exports = function (config, sri4nodeUtils) {
     return deferred.promise;
   }
 
-  // special case: If reduction of raw security groups yields /{type} -> allow
-  function checkSpecialCase(reducedGroups, permalink) {
+  // special case: If route is a subset of the reduction of raw security groups => allow
+  function checkSpecialCaseForQuery(reducedGroups, route) {
+    return reducedGroups.some(utils.contains(route));
+  }
+
+  function checkSpecialCaseForPermalink(reducedGroups, permalink) {
     var type = utils.getResourceTypeFromPermalink(permalink);
-    var i;
+    return checkSpecialCaseForQuery(reducedGroups, type);
+  }
 
-    if (type) {
-      for (i = 0; i < reducedGroups.length; i++) {
-        if (reducedGroups[i] === type) {
-          return true;
-        }
-      }
+  function checkSpecialCase(reducedGroups, route) {
+    if (utils.isPermalink(route)) {
+      return checkSpecialCaseForPermalink(reducedGroups, route);
     }
-
-    return false;
+    return checkSpecialCaseForQuery(reducedGroups, route);
   }
 
   function getKey(permission, element) {
@@ -147,7 +147,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
     return element.body.key;
   }
 
-  function checkDirectPermissionOnSet(permission, elements, me, component, database, deferred) {
+  function checkDirectPermissionOnSet(permission, elements, me, component, database, reducedGroups, deferred) {
 
     var i;
 
@@ -156,41 +156,27 @@ exports = module.exports = function (config, sri4nodeUtils) {
     }
     var promises = [];
 
-    // get resource groups from security
-    console.log('Getting resource groups');
-    getResourceGroups(permission, me, component).then(function (groups) {
+    for (i = 0; i < elements.length; i++) {
 
-      var reducedGroups = utils.reduceRawGroups(groups);
-
-      for (i = 0; i < elements.length; i++) {
-
-        // special case: If reduction of raw security groups yields /{type} -> allow
-        if (checkSpecialCase(reducedGroups, elements[i].path)) {
-          promises.push(Q.fcall(function () { return true; }));
-        } else {
-          promises.push(checkDirectPermissionOnElement(getKey(permission, elements[i]), reducedGroups,
-            me, component, database));
-        }
-
+      // special case: If reduction of raw security groups yields /{type} -> allow
+      if (checkSpecialCaseForPermalink(reducedGroups, elements[i].path)) {
+        promises.push(Q.fcall(function () { return true; }));
+      } else {
+        promises.push(checkDirectPermissionOnElement(getKey(permission, elements[i]), reducedGroups,
+          me, component, database));
       }
+    }
 
-      Q.all(promises).then(function () {
-        console.log('All checks finished. Permission granted');
-        deferred.resolve();
-      }).fail(function () {
-        console.log('All checks finished. Permission failed');
-        fail(deferred);
-      });
-
+    Q.all(promises).then(function () {
+      deferred.resolve();
     }).fail(function () {
-      // this should not happen as beveiliging must always response
       fail(deferred);
     });
 
     return deferred.promise;
   }
 
-  function responseHandlerBatchFn(op, deferred, permission, elements, me, component, database) {
+  function responseHandlerBatchFn(op, deferred, permission, elements, me, component, database, reducedGroups) {
 
     return function (err, response) {
 
@@ -198,8 +184,6 @@ exports = module.exports = function (config, sri4nodeUtils) {
       var failed;
 
       if (err) {
-
-        console.log('Check error. Retrying...');
 
         if (op.retry(err)) {
           return;
@@ -219,54 +203,65 @@ exports = module.exports = function (config, sri4nodeUtils) {
         }
 
         if (failed.length === 0) {
-          console.log('Response from Security. Continuing...');
           deferred.resolve();
         } else {
           // check direct (in current database transaction)
-          console.log('Response from Security contains a constraint, checking directly in the database');
-          checkDirectPermissionOnSet(permission, elements, me, component, database, deferred);
+          checkDirectPermissionOnSet(permission, elements, me, component, database, reducedGroups, deferred);
         }
 
       } else {
         // check direct (in current database transaction)
-        checkDirectPermissionOnSet(permission, elements, me, component, database, deferred);
+        checkDirectPermissionOnSet(permission, elements, me, component, database, reducedGroups, deferred);
       }
 
     };
   }
 
-  function checkPermission(permission, elements, me, component, database) {
-
-    console.log('Checking ' + permission + ' permission for ' + elements.length + ' elements');
+  function checkPermission(permission, elements, me, component, database, route) {
 
     var deferred = Q.defer();
 
-    var operation = constructOperation();
+    // 1) get raw groups
+    getResourceGroups(permission, me, component).then(function (groups) {
 
-    var batchRequests = [];
-    var i;
-    var baseUrl = '/security/query/allowed?component=' + component;
-    baseUrl += '&ability=' + permission;
-    baseUrl += '&person=/persons/' + me.uuid;
+      var reducedGroups = utils.reduceRawGroups(groups);
 
-    for (i = 0; i < elements.length; i++) {
-      batchRequests.push({
-        verb: 'GET',
-        href: baseUrl + '&resource=' + elements[i].path
+      // 2) check if route is subset of any raw group => grant access
+      if (route && checkSpecialCase(reducedGroups, route)) {
+        return deferred.resolve();
+      }
+
+      // 3) check against beveiliging
+      var operation = constructOperation();
+
+      var batchRequests = [];
+      var i;
+      var baseUrl = '/security/query/allowed?component=' + component;
+      baseUrl += '&ability=' + permission;
+      baseUrl += '&person=/persons/' + me.uuid;
+
+      for (i = 0; i < elements.length; i++) {
+        batchRequests.push({
+          verb: 'GET',
+          href: baseUrl + '&resource=' + elements[i].path
+        });
+      }
+
+      operation.attempt(function () {
+        needle.put(config.SECURITY_API_HOST + '/security/query/batch', batchRequests, reqOptions,
+          responseHandlerBatchFn(operation, deferred, permission, elements, me, component, database, reducedGroups));
       });
-    }
 
-    operation.attempt(function () {
-      needle.put(config.SECURITY_API_HOST + '/security/query/batch', batchRequests, reqOptions,
-        responseHandlerBatchFn(operation, deferred, permission, elements, me, component, database));
     });
 
     return deferred.promise;
+
+
   }
 
   return {
 
-    checkReadPermissionOnSet: function (elements, me, component, database) {
+    checkReadPermissionOnSet: function (elements, me, component, database, route) {
 
       elements = elements.map(function (element) {
         return {
@@ -275,13 +270,19 @@ exports = module.exports = function (config, sri4nodeUtils) {
         };
       });
 
-      return checkPermission('read', elements, me, component, database);
+      return checkPermission('read', elements, me, component, database, route);
     },
     checkInsertPermissionOnSet: function (elements, me, component, database) {
 
       // we check the permission directly because since it's a new resource the allowed
       // query will return false
-      return checkDirectPermissionOnSet('create', elements, me, component, database);
+
+      return getResourceGroups('create', me, component).then(function (groups) {
+
+        return checkDirectPermissionOnSet('create', elements, me, component, database, utils.reduceRawGroups(groups));
+
+      });
+
     },
     checkUpdatePermissionOnSet: function (elements, me, component, database) {
 
