@@ -144,7 +144,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
     if (utils.isPermalink(route)) {
       return checkSpecialCaseForPermalink(reducedGroups, route);
     }
-    return checkSpecialCaseForQuery(reducedGroups, route);
+    return checkSpecialCaseForQuery(reducedGroups, decodeURIComponent(route));
   }
 
   function getKey(permission, element) {
