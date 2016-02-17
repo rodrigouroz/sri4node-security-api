@@ -22,7 +22,7 @@ module.exports = function (validKeys) {
 
     },
     convertListResourceURLToSQL: function () {
-
+      return Q.fcall(function () { return true; });
     },
     executeSQL: function (database, query) {
 

@@ -27,13 +27,6 @@ exports = module.exports = function (config, sri4nodeUtils) {
     });
   }
 
-  function fail(deferred) {
-    return deferred.reject({
-      statusCode: 403,
-      body: '<h1>403 Forbidden</h1>'
-    });
-  }
-
   function getResourceGroups(permission, me, component) {
 
     var operation = constructOperation();
@@ -41,7 +34,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
 
     var url = config.SECURITY_API_HOST + '/security/query/resources/raw?component=' + component;
     url += '&ability=' + permission;
-    url += '&person=/persons/' + me.uuid;
+    url += '&person=' + me;
 
     function handler(op, promise) {
 
@@ -92,6 +85,20 @@ exports = module.exports = function (config, sri4nodeUtils) {
       };
     }
 
+    function resolveQuery(queryConverted, keyConverted, groupConvertedDeferred) {
+
+      return function () {
+        queryConverted.sql(' AND \"key\" = ').param(keyConverted);
+
+        sri4nodeUtils.executeSQL(database, queryConverted)
+          .then(checkElementExists(groupConvertedDeferred))
+          .catch(function () {
+            groupConvertedDeferred.reject();
+          });
+      };
+
+    }
+
     // for each group, convert to sql and check if the new element is there
     for (i = 0; i < reducedGroups.length; i++) {
       groupUrl = urlModule.parse(reducedGroups[i], true);
@@ -100,9 +107,10 @@ exports = module.exports = function (config, sri4nodeUtils) {
       promises.push(groupDeferred.promise);
       // there is no guarantee that the group is mapped in the database
       try {
-        sri4nodeUtils.convertListResourceURLToSQL(groupUrl.pathname, groupUrl.query, false, database, query);
-        query.sql(' AND \"key\" = ').param(key);
-        sri4nodeUtils.executeSQL(database, query).then(checkElementExists(groupDeferred));
+
+        sri4nodeUtils.convertListResourceURLToSQL(groupUrl.pathname, groupUrl.query, false, database, query).
+          then(resolveQuery(query, key, groupDeferred));
+
       } catch (e) {
         groupDeferred.reject();
       }
@@ -170,7 +178,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
     Q.all(promises).then(function () {
       deferred.resolve();
     }).fail(function () {
-      fail(deferred);
+      deferred.reject();
     });
 
     return deferred.promise;
@@ -223,7 +231,6 @@ exports = module.exports = function (config, sri4nodeUtils) {
 
     // 1) get raw groups
     getResourceGroups(permission, me, component).then(function (groups) {
-
       var reducedGroups = utils.reduceRawGroups(groups);
 
       // 2) check if route is subset of any raw group => grant access
@@ -238,7 +245,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
       var i;
       var baseUrl = '/security/query/allowed?component=' + component;
       baseUrl += '&ability=' + permission;
-      baseUrl += '&person=/persons/' + me.uuid;
+      baseUrl += '&person=' + me;
 
       for (i = 0; i < elements.length; i++) {
         batchRequests.push({
@@ -270,12 +277,20 @@ exports = module.exports = function (config, sri4nodeUtils) {
         };
       });
 
+      // special case: if me === null (anonymous) we ask for person * (in beveiliging * means public)
+      if (!me) {
+        me = '*';
+      } else {
+        me = '/persons/' + me.uuid;
+      }
+
       return checkPermission('read', elements, me, component, database, route);
     },
     checkInsertPermissionOnSet: function (elements, me, component, database) {
 
       // we check the permission directly because since it's a new resource the allowed
       // query will return false
+      me = '/persons/' + me.uuid;
 
       return getResourceGroups('create', me, component).then(function (groups) {
 
@@ -286,9 +301,13 @@ exports = module.exports = function (config, sri4nodeUtils) {
     },
     checkUpdatePermissionOnSet: function (elements, me, component, database) {
 
+      me = '/persons/' + me.uuid;
+
       return checkPermission('update', elements, me, component, database);
     },
     checkDeletePermissionOnSet: function (elements, me, component, database) {
+
+      me = '/persons/' + me.uuid;
 
       return checkPermission('delete', elements, me, component, database);
     }

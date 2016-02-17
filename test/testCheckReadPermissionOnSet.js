@@ -36,6 +36,17 @@ describe('Check read permission on a set of elements', function () {
       .reply(200, response);
 
     response = [
+      '/content?type=CURRICULUM&public=true'
+    ];
+
+    url = '/security/query/resources/raw?component=/security/components/content-api';
+    url += '&ability=read&person=*';
+
+    nock(configuration.SECURITY_API_HOST)
+      .get(url)
+      .reply(200, response);
+
+    response = [
       '/content'
     ];
 
@@ -172,6 +183,30 @@ describe('Check read permission on a set of elements', function () {
 
     return security.checkReadPermissionOnSet(elements, me, '/security/components/content-api', databaseMock,
         '/content?type=CURRICULUM&root=/content/017ea598-fcce-4165-a03b-759950ca48c4').then(function () {
+          assert(true);
+
+        });
+
+  });
+
+  it('should allow the read of a set of elements for an anonymous user', function () {
+
+    var elements = [{
+      $$meta: {
+        permalink: '/content/b95fbe1b-755c-4135-83eb-77d743e12443'
+      }
+    }, {
+      $$meta: {
+        permalink: '/content/a7c119d6-8058-4c33-b329-05772c4550eb'
+      }
+    }];
+
+    var databaseMock = {};
+
+    security = require('../js/security')(configuration, sri4nodeUtilsMock([]));
+
+    return security.checkReadPermissionOnSet(elements, null, '/security/components/content-api', databaseMock,
+        '/content?type=CURRICULUM&public=true&root=/content/017ea598-fcce-4165-a03b-759950ca48c4').then(function () {
           assert(true);
 
         });
