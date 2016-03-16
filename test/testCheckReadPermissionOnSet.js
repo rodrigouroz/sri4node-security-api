@@ -182,7 +182,7 @@ describe('Check read permission on a set of elements', function () {
     security = require('../js/security')(configuration, sri4nodeUtilsMock([]));
 
     return security.checkReadPermissionOnSet(elements, me, '/security/components/content-api', databaseMock,
-        '/content?type=CURRICULUM&root=/content/017ea598-fcce-4165-a03b-759950ca48c4').then(function () {
+        '/content?type=CURRICULUM&root=/content/017ea598-fcce-4165-a03b-759950ca48c4', 'read').then(function () {
           assert(true);
 
         });
@@ -206,7 +206,7 @@ describe('Check read permission on a set of elements', function () {
     security = require('../js/security')(configuration, sri4nodeUtilsMock([]));
 
     return security.checkReadPermissionOnSet(elements, null, '/security/components/content-api', databaseMock,
-        '/content?type=CURRICULUM&public=true&root=/content/017ea598-fcce-4165-a03b-759950ca48c4').then(function () {
+        '/content?type=CURRICULUM&public=true&root=/content/017ea598-fcce-4165-a03b-759950ca48c4', 'read').then(function () {
           assert(true);
 
         });
@@ -230,7 +230,7 @@ describe('Check read permission on a set of elements', function () {
     security = require('../js/security')(configuration, sri4nodeUtilsMock([]));
 
     return security.checkReadPermissionOnSet(elements, {uuid: '7c0592b0-1ea6-4f38-9d08-31dc793062ba'},
-      '/security/components/content-api', databaseMock, '/content').then(function () {
+      '/security/components/content-api', databaseMock, '/content', 'read').then(function () {
         assert(true);
       });
 
@@ -258,7 +258,7 @@ describe('Check read permission on a set of elements', function () {
     security = require('../js/security')(configuration, sri4nodeUtilsMock([]));
 
     return security.checkReadPermissionOnSet(elements, me, '/security/components/persons-api', databaseMock,
-      '/weird-query').fail(function (error) {
+      '/weird-query', 'read').fail(function (error) {
         assert.equal(403, error.statusCode);
         assert.equal('<h1>403 Forbidden</h1>', error.body);
       });
@@ -278,7 +278,7 @@ describe('Check read permission on a set of elements', function () {
     security = require('../js/security')(configuration, sri4nodeUtilsMock(['017ea598-fcce-4165-a03b-759950ca48c4']));
 
     return security.checkReadPermissionOnSet(elements, me, '/security/components/persons-api', databaseMock,
-      '/weird-query').then(function () {
+      '/weird-query', 'read').then(function () {
         assert(true);
       });
   });
@@ -303,7 +303,7 @@ describe('Check read permission on a set of elements', function () {
     security = require('../js/security')(configuration, sri4nodeUtilsMock([]));
 
     return security.checkReadPermissionOnSet(elements, me, '/security/components/persons-api', databaseMock,
-      '/weird-query').fail(function (error) {
+      '/weird-query', 'read').fail(function (error) {
         assert.equal(403, error.statusCode);
         assert.equal('<h1>403 Forbidden</h1>', error.body);
       });
