@@ -268,7 +268,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
 
   return {
 
-    checkReadPermissionOnSet: function (elements, me, component, database, route) {
+    checkReadPermissionOnSet: function (elements, me, component, database, route, ability) {
 
       elements = elements.map(function (element) {
         return {
@@ -284,7 +284,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
         me = '/persons/' + me.uuid;
       }
 
-      return checkPermission('read', elements, me, component, database, route);
+      return checkPermission(ability, elements, me, component, database, route);
     },
     checkInsertPermissionOnSet: function (elements, me, component, database) {
 

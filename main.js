@@ -9,13 +9,18 @@ module.exports = function (configuration, sri4nodeUtils) {
 
   return function (component) {
     return {
-      checkReadPermission: function (database, elements, me, route) {
+      // special case: ability can be something different for checking sub resources
+      checkReadPermission: function (database, elements, me, route, ability) {
         // sanitize, always pass an array to the check function
         if (!Array.isArray(elements)) {
           elements = [elements];
         }
 
-        return security.checkReadPermissionOnSet(elements, me, component, database, route);
+        if (!ability) {
+          ability = 'read';
+        }
+
+        return security.checkReadPermissionOnSet(elements, me, component, database, route, ability);
       },
       checkInsertPermission: function (database, elements, me) {
         // sanitize, always pass an array to the check function
