@@ -1,6 +1,9 @@
 var assert = require('assert');
 var nock = require('nock');
 var sri4nodeUtilsMock = require('./sri4nodeUtilsMock');
+var describe = require('mocha').describe;
+var before = require('mocha').before;
+var it = require('mocha').it;
 
 var configuration = {
   USER: '***REMOVED***',

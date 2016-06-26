@@ -1,6 +1,9 @@
 var assert = require('assert');
 var nock = require('nock');
 var sri4nodeUtilsMock = require('./sri4nodeUtilsMock');
+var describe = require('mocha').describe;
+var before = require('mocha').before;
+var it = require('mocha').it;
 
 var configuration = {
   USER: '***REMOVED***',
@@ -15,7 +18,6 @@ describe('Check update permission on a set of elements', function () {
 
   var me;
   var response;
-  var batch;
 
   before(function () {
 
@@ -24,85 +26,6 @@ describe('Check update permission on a set of elements', function () {
     me = {
       uuid: '6c0592b0-1ea6-4f38-9d08-31dc793062ba'
     };
-
-    batch = [{
-      verb: 'GET',
-      href: '/security/query/allowed?component=/security/components/persons-api&ability=update' +
-        '&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/persons/cf2dccb0-d944-4402-e044-d4856467bfb8'
-    }];
-
-    response = [{
-      status: 200,
-      body: false,
-      href: '/security/query/allowed?component=/security/components/persons-api&ability=update' +
-        '&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/persons/cf2dccb0-d944-4402-e044-d4856467bfb8'
-    }];
-
-    nock(configuration.SECURITY_API_HOST)
-      .put('/security/query/batch', batch)
-      .reply(200, response);
-
-    batch = [{
-      verb: 'GET',
-      href: '/security/query/allowed?component=/security/components/persons-api&ability=update' +
-        '&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/persons/df2dccb0-d944-4402-e044-d4856467bfb8'
-    }];
-
-    response = [{
-      status: 200,
-      body: false,
-      href: '/security/query/allowed?component=/security/components/persons-api&ability=update' +
-        '&person=/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/persons/df2dccb0-d944-4402-e044-d4856467bfb8'
-    }];
-
-    nock(configuration.SECURITY_API_HOST)
-      .put('/security/query/batch', batch)
-      .reply(200, response);
-
-    batch = [{
-      verb: 'GET',
-      href: '/security/query/allowed?component=/security/components/organisationalunits-api&ability=update&person=' +
-        '/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/organisations/c000eaea-9ce7-2590-e044-d4856467bfb8'
-    },
-    {
-      verb: 'GET',
-      href: '/security/query/allowed?component=/security/components/organisationalunits-api&ability=update&person=' +
-        '/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/organisations/cf2dccb0-d944-4402-e044-d4856467bfb8'
-    }];
-
-    response = [{
-      status: 200,
-      body: true,
-      href: '/security/query/allowed?component=/security/components/organisationalunits-api&ability=update&person=' +
-        '/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/organisations/c000eaea-9ce7-2590-e044-d4856467bfb8'
-    },
-    {
-      status: 200,
-      body: true,
-      href: '/security/query/allowed?component=/security/components/organisationalunits-api&ability=update&person=' +
-        '/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/organisations/cf2dccb0-d944-4402-e044-d4856467bfb8'
-    }];
-
-    nock(configuration.SECURITY_API_HOST)
-      .put('/security/query/batch', batch)
-      .reply(200, response);
-
-    batch = [{
-      verb: 'GET',
-      href: '/security/query/allowed?component=/security/components/content-api&ability=update&person=' +
-        '/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/content/0a543170-f917-fe1d-925d-9f1bb20d3957'
-    }];
-
-    response = [{
-      status: 200,
-      body: false,
-      href: '/security/query/allowed?component=/security/components/content-api&ability=update&person=' +
-        '/persons/6c0592b0-1ea6-4f38-9d08-31dc793062ba&resource=/content/0a543170-f917-fe1d-925d-9f1bb20d3957'
-    }];
-
-    nock(configuration.SECURITY_API_HOST)
-      .put('/security/query/batch', batch)
-      .reply(200, response);
 
     response = [
       '/clbs',
@@ -194,84 +117,6 @@ describe('Check update permission on a set of elements', function () {
       });
   });
 
-  it('should allow the update of a set of elements', function () {
-    var organisation = {
-      key: 'c000eaea-9ce7-2590-e044-d4856467bfb8',
-      details: [{
-        key: 'f6612220-9c1b-43f1-9256-9178ac4cfa19',
-        startDate: '2014-10-01',
-        name: 'Raad van Bestuur Katholiek Onderwijs',
-        shortName: 'RvB VSKO',
-        statute: 'ONBEKEND'
-      }, {
-        key: '15788873-99d2-482e-87dd-281c6b9801b8',
-        startDate: '1940-09-01',
-        endDate: '2014-09-30',
-        name: 'Centraal Bureau van het katholiek Onderwijs',
-        shortName: 'Centraal Bureau',
-        statute: 'ONBEKEND'
-      }],
-      seatAddresses: [],
-      type: 'BELEIDSORGAAN',
-      locations: [],
-      telecoms: {
-        phones: [],
-        faxes: [],
-        emails: [],
-        websites: []
-      }
-    };
-
-    var elements = [];
-
-    elements.push({
-      path: '/organisations/c000eaea-9ce7-2590-e044-d4856467bfb8',
-      body: organisation
-    });
-
-    organisation = {
-      key: 'cf2dccb0-d944-4402-e044-d4856467bfb8',
-      details: [{
-        key: 'f6612220-9c1b-43f1-9256-9178ac4cfa19',
-        startDate: '2014-10-01',
-        name: 'Raad van Bestuur Katholiek Onderwijs',
-        shortName: 'RvB VSKO',
-        statute: 'ONBEKEND'
-      }, {
-        key: '15788873-99d2-482e-87dd-281c6b9801b8',
-        startDate: '1940-09-01',
-        endDate: '2014-09-30',
-        name: 'Centraal Bureau van het katholiek Onderwijs',
-        shortName: 'Centraal Bureau',
-        statute: 'ONBEKEND'
-      }],
-      seatAddresses: [],
-      type: 'BELEIDSORGAAN',
-      locations: [],
-      telecoms: {
-        phones: [],
-        faxes: [],
-        emails: [],
-        websites: []
-      }
-    };
-
-    elements.push({
-      path: '/organisations/cf2dccb0-d944-4402-e044-d4856467bfb8',
-      body: organisation
-    });
-
-    var databaseMock = {};
-
-    security = require('../js/security')(configuration,
-      sri4nodeUtilsMock([]));
-
-    return security.checkUpdatePermissionOnSet(elements, me, '/security/components/organisationalunits-api',
-      databaseMock).then(function () {
-        assert(true);
-      });
-  });
-
   it('should allow the update of a set of elements when the reduced group matches /{type}', function () {
 
     var content = {
@@ -307,7 +152,7 @@ describe('Check update permission on a set of elements', function () {
 
     var databaseMock = {};
 
-    security = require('../js/security')(configuration, sri4nodeUtilsMock(null));
+    security = require('../js/security')(configuration, sri4nodeUtilsMock(['0a543170-f917-fe1d-925d-9f1bb20d3957']));
 
     return security.checkUpdatePermissionOnSet(elements, me, '/security/components/content-api',
       databaseMock).then(function () {
@@ -315,8 +160,7 @@ describe('Check update permission on a set of elements', function () {
       });
   });
 
-  it('should allow the update of an element that the allowed query returns false but the direct ' +
-    'check in the database works', function () {
+  it('should allow the update of an element that the direct check in the database works', function () {
 
     var person = {
       key: 'df2dccb0-d944-4402-e044-d4856467bfb8',

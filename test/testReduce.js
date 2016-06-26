@@ -1,5 +1,7 @@
 var assert = require('assert');
 var utils = require('../js/utils');
+var it = require('mocha').it;
+var describe = require('mocha').describe;
 
 describe('Reduce Security raw groups', function () {
   'use strict';

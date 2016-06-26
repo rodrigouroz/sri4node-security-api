@@ -1,5 +1,7 @@
 var assert = require('assert');
 var utils = require('../js/utils');
+var describe = require('mocha').describe;
+var it = require('mocha').it;
 
 describe('Get Resource Type From Permalink', function () {
   'use strict';
