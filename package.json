@@ -1,6 +1,6 @@
 {
   "name": "sri4node-security-api",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "A module to connect sri4node backends to the sri security api (https://github.com/rodrigouroz/sri-security-api)",
   "main": "main.js",
   "scripts": {

@@ -10,14 +10,18 @@ module.exports = function (configuration, sri4nodeUtils) {
   return function (component) {
     return {
       // special case: ability can be something different for checking sub resources
-      checkReadPermission: function (database, elements, me, route, ability) {
+      checkReadPermission: function (database, elements, me, route, param) {
         // sanitize, always pass an array to the check function
         if (!Array.isArray(elements)) {
           elements = [elements];
         }
 
-        if (!ability) {
+        var ability;
+
+        if (!param || param instanceof Function) {
           ability = 'read';
+        } else {
+          ability = param;
         }
 
         return security.checkReadPermissionOnSet(elements, me, component, database, route, ability);
