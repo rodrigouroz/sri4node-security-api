@@ -18,7 +18,7 @@ module.exports = function (configuration, sri4nodeUtils) {
 
         var ability;
 
-        if (!param || param instanceof Function) {
+        if (!param || typeof param === 'function') {
           ability = 'read';
         } else {
           ability = param;
