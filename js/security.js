@@ -45,18 +45,12 @@ exports = module.exports = function (config, sri4nodeUtils) {
           if (op.retry(err)) {
             return;
           }
-          console.warn('SECURITY REQUEST FAILED: ' + err);
           promise.reject(err);
         }
 
         if (response.statusCode === 200) {
           promise.resolve(response.body);
         } else {
-          if(response.body){
-            console.warn('SECURITY REQUEST FAILED: ' + response.statusCode + ' - ' + JSON.stringify(response.body));
-          } else {
-            console.warn('SECURITY REQUEST FAILED: ' + response.statusCode);
-          }
           promise.reject();
         }
 
