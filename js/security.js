@@ -45,6 +45,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
           if (op.retry(err)) {
             return;
           }
+          
           promise.reject(err);
         }
 
