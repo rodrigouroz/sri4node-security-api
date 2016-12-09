@@ -109,7 +109,6 @@ exports = module.exports = function (config, sri4nodeUtils) {
     function checkElementsExist(promise) {
 
       return function (result) {
-        console.log('Results length:', result.rows.length)
         if (result.rows.length === elements.length) {
           promise.resolve();
         } else {
@@ -119,7 +118,6 @@ exports = module.exports = function (config, sri4nodeUtils) {
     }
 
     function resolveQuery(queryConverted, groupConvertedDeferred) {
-      console.log('resolveQuery init..');
       var keys = elements.map((element) => {
         return getKey(permission, element);
       });
@@ -137,19 +135,16 @@ exports = module.exports = function (config, sri4nodeUtils) {
     }
 
     function convertListToSqlFailed(err) {
-      console.log('convertListToSqlFailed..', err);
       groupDeferred.reject();
     }
 
     // for each group, convert to sql and check if the elements are there
-    console.log('Iterate reducedGroups..');
     for (i = 0; i < reducedGroups.length; i++) {
       groupUrl = urlModule.parse(reducedGroups[i], true);
       // console.log('Group url..', groupUrl);
       query = sri4nodeUtils.prepareSQL('check-resource-exist');
       groupDeferred = Q.defer();
       promises.push(groupDeferred.promise);
-      console.log('Before convertListResourceURLToSQL..');
       // there is no guarantee that the group is mapped in the database
       sri4nodeUtils.convertListResourceURLToSQL(groupUrl.pathname, groupUrl.query, false, database, query)
         .then(resolveQuery(query, groupDeferred))
@@ -164,10 +159,8 @@ exports = module.exports = function (config, sri4nodeUtils) {
             function (result) {
               return result.state === 'fulfilled';
             })) {
-          console.log('All settled, some fulfilled..');
           deferred.resolve();
         } else {
-          console.log('All settled, NONE fulfilled..');
           deferred.reject({
             statusCode: 403,
             body: 'Forbidden'
@@ -186,12 +179,11 @@ exports = module.exports = function (config, sri4nodeUtils) {
     getResourceGroups(permission, me, component)
       .then(function (groups) {
         var reducedGroups = utils.reduceRawGroups(groups);
-        console.log('Step 2 init..');
         // 2) check if route is subset of any raw group => grant access
         if (route && checkSpecialCase(reducedGroups, route)) {
           return deferred.resolve();
         }
-        console.log('Step 3 init..');
+
         checkDirectPermissionOnSet(permission, elements, database, reducedGroups, deferred);
 
       })
