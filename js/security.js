@@ -119,7 +119,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
     }
 
     function resolveQuery(queryConverted, groupConvertedDeferred) {
-
+      console.log('resolveQuery init..');
       var keys = elements.map((element) => {
         return getKey(permission, element);
       });
@@ -145,9 +145,11 @@ exports = module.exports = function (config, sri4nodeUtils) {
     console.log('Iterate reducedGroups..');
     for (i = 0; i < reducedGroups.length; i++) {
       groupUrl = urlModule.parse(reducedGroups[i], true);
+      console.log('Group url..', groupUrl);
       query = sri4nodeUtils.prepareSQL('check-resource-exist');
       groupDeferred = Q.defer();
       promises.push(groupDeferred.promise);
+      console.log('Before convertListResourceURLToSQL..');
       // there is no guarantee that the group is mapped in the database
       sri4nodeUtils.convertListResourceURLToSQL(groupUrl.pathname, groupUrl.query, false, database, query)
         .then(resolveQuery(query, groupDeferred))
@@ -191,8 +193,8 @@ exports = module.exports = function (config, sri4nodeUtils) {
         checkDirectPermissionOnSet(permission, elements, database, reducedGroups, deferred);
 
       })
-      .fail(function () {
-        console.log('Failed get resources..');
+      .fail(function (e) {
+        console.log('Failed get resources..', e);
         deferred.reject({
           statusCode: 403,
           body: 'Forbidden'
