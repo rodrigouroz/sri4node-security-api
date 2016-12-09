@@ -45,7 +45,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
           if (op.retry(err)) {
             return;
           }
-          
+
           promise.reject(err);
         }
 
@@ -109,6 +109,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
     function checkElementsExist(promise) {
 
       return function (result) {
+        console.log('Results length:', result.rows.length)
         if (result.rows.length === elements.length) {
           promise.resolve();
         } else {
@@ -125,7 +126,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
 
       return function () {
         queryConverted.sql(' AND \"key\" IN (').array(keys).sql(')');
-
+        console.log('QUERY', queryConverted.text, queryConverted.params);
         sri4nodeUtils.executeSQL(database, queryConverted)
           .then(checkElementsExist(groupConvertedDeferred))
           .catch(function () {
