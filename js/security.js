@@ -136,8 +136,8 @@ exports = module.exports = function (config, sri4nodeUtils) {
 
     }
 
-    function convertListToSqlFailed(groupDeferred) {
-      console.log('convertListToSqlFailed..');
+    function convertListToSqlFailed(err) {
+      console.log('convertListToSqlFailed..', err);
       groupDeferred.reject();
     }
 
@@ -153,7 +153,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
       // there is no guarantee that the group is mapped in the database
       sri4nodeUtils.convertListResourceURLToSQL(groupUrl.pathname, groupUrl.query, false, database, query)
         .then(resolveQuery(query, groupDeferred))
-        .fail(convertListToSqlFailed(groupDeferred));
+        .fail(convertListToSqlFailed);
     }
 
     // at least one succeeded
