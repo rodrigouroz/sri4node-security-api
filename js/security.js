@@ -137,10 +137,12 @@ exports = module.exports = function (config, sri4nodeUtils) {
     }
 
     function convertListToSqlFailed(groupDeferred) {
+      console.log('convertListToSqlFailed..');
       groupDeferred.reject();
     }
 
     // for each group, convert to sql and check if the elements are there
+    console.log('Iterate reducedGroups..');
     for (i = 0; i < reducedGroups.length; i++) {
       groupUrl = urlModule.parse(reducedGroups[i], true);
       query = sri4nodeUtils.prepareSQL('check-resource-exist');
@@ -180,16 +182,17 @@ exports = module.exports = function (config, sri4nodeUtils) {
     getResourceGroups(permission, me, component)
       .then(function (groups) {
         var reducedGroups = utils.reduceRawGroups(groups);
-
+        console.log('Step 2 init..');
         // 2) check if route is subset of any raw group => grant access
         if (route && checkSpecialCase(reducedGroups, route)) {
           return deferred.resolve();
         }
-
+        console.log('Step 3 init..');
         checkDirectPermissionOnSet(permission, elements, database, reducedGroups, deferred);
 
       })
       .fail(function () {
+        console.log('Failed get resources..');
         deferred.reject({
           statusCode: 403,
           body: 'Forbidden'
