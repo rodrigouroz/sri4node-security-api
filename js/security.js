@@ -35,7 +35,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
     var url = config.SECURITY_API_HOST + '/security/query/resources/raw?component=' + component;
     url += '&ability=' + permission;
     url += '&person=' + me;
-
+    console.log(url);
     function handler(op, promise) {
 
       return function (err, response) {
@@ -51,7 +51,13 @@ exports = module.exports = function (config, sri4nodeUtils) {
 
         if (response && response.statusCode === 200) {
           promise.resolve(response.body);
+          console.log(response.body);
         } else {
+          if (response){
+            console.log(response.statusCode);
+          }else{
+            console.log('ERROR');
+          }
           promise.reject();
         }
 
