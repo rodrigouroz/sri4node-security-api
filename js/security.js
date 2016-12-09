@@ -126,7 +126,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
 
       return function () {
         queryConverted.sql(' AND \"key\" IN (').array(keys).sql(')');
-        console.log('QUERY', queryConverted.text, queryConverted.params);
+        // console.log('QUERY', queryConverted.text, queryConverted.params);
         sri4nodeUtils.executeSQL(database, queryConverted)
           .then(checkElementsExist(groupConvertedDeferred))
           .catch(function () {
@@ -145,7 +145,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
     console.log('Iterate reducedGroups..');
     for (i = 0; i < reducedGroups.length; i++) {
       groupUrl = urlModule.parse(reducedGroups[i], true);
-      console.log('Group url..', groupUrl);
+      // console.log('Group url..', groupUrl);
       query = sri4nodeUtils.prepareSQL('check-resource-exist');
       groupDeferred = Q.defer();
       promises.push(groupDeferred.promise);
@@ -164,8 +164,10 @@ exports = module.exports = function (config, sri4nodeUtils) {
             function (result) {
               return result.state === 'fulfilled';
             })) {
+          console.log('All settled, some fulfilled..');
           deferred.resolve();
         } else {
+          console.log('All settled, NONE fulfilled..');
           deferred.reject({
             statusCode: 403,
             body: 'Forbidden'
