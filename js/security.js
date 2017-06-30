@@ -117,13 +117,20 @@ exports = module.exports = function (config, sri4nodeUtils) {
       };
     }
 
+    function getTableName(permission, element) {
+      var path = permission === 'delete' ? element.body : element.path;
+      return path.split('/')[path.split('/').length - 2];
+    }
+
     function resolveQuery(queryConverted, groupConvertedDeferred) {
       var keys = elements.map((element) => {
         return getKey(permission, element);
       });
 
+      var tablename = getTableName(permission, elements[0]);
+
       return function () {
-        queryConverted.sql(' AND \"key\" IN (').array(keys).sql(')');
+        queryConverted.sql(' AND ' + tablename + '.\"key\" IN (').array(keys).sql(')');
         // console.log('QUERY', queryConverted.text, queryConverted.params);
         sri4nodeUtils.executeSQL(database, queryConverted)
           .then(checkElementsExist(groupConvertedDeferred))
