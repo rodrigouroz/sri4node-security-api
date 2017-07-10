@@ -134,7 +134,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
 
       return function () {
         queryConverted.sql(' AND ' + tablename + '.\"key\" IN (').array(keys).sql(')');
-         console.log('QUERY:', queryConverted.text, queryConverted.params);
+        //  console.log('QUERY:', queryConverted.text, queryConverted.params);
         sri4nodeUtils.executeSQL(database, queryConverted)
           .then(checkElementsExist(groupConvertedDeferred))
           .catch(function () {
