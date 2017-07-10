@@ -117,21 +117,24 @@ exports = module.exports = function (config, sri4nodeUtils) {
       };
     }
 
-    function getTableName(permission, element) {
-      var path = permission === 'delete' ? element.body : element.path;
-      return path.split('/')[path.split('/').length - 2];
+    function getTableName(permission, element, reducedGroup) {
+      if (permission === 'delete') {
+        var path = element.body;
+        return path.split('/')[path.split('/').length - 2];
+      }
+      return reducedGroup.split('/')[reducedGroup.split('/').length - 1];
     }
 
-    function resolveQuery(queryConverted, groupConvertedDeferred) {
+    function resolveQuery(queryConverted, reducedGroup, groupConvertedDeferred) {
       var keys = elements.map((element) => {
         return getKey(permission, element);
       });
 
-      var tablename = getTableName(permission, elements[0]);
+      var tablename = getTableName(permission, elements[0], reducedGroup);
 
       return function () {
         queryConverted.sql(' AND ' + tablename + '.\"key\" IN (').array(keys).sql(')');
-        // console.log('QUERY', queryConverted.text, queryConverted.params);
+         console.log('QUERY:', queryConverted.text, queryConverted.params);
         sri4nodeUtils.executeSQL(database, queryConverted)
           .then(checkElementsExist(groupConvertedDeferred))
           .catch(function () {
@@ -154,7 +157,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
       promises.push(groupDeferred.promise);
       // there is no guarantee that the group is mapped in the database
       sri4nodeUtils.convertListResourceURLToSQL(groupUrl.pathname, groupUrl.query, false, database, query)
-        .then(resolveQuery(query, groupDeferred))
+        .then(resolveQuery(query, reducedGroups[i], groupDeferred))
         .fail(convertListToSqlFailed);
     }
 
