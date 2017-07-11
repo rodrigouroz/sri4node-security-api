@@ -118,11 +118,13 @@ exports = module.exports = function (config, sri4nodeUtils) {
     }
 
     function getTableName(permission, element, reducedGroup) {
+      var path;
       if (permission === 'delete') {
-        var path = element.body;
+        path = element.body;
         return path.split('/')[path.split('/').length - 2];
       }
-      return reducedGroup.split('/')[reducedGroup.split('/').length - 1];
+      path = reducedGroup.split('?')[0];
+      return path.split('/')[path.split('/').length - 1];
     }
 
     function resolveQuery(queryConverted, reducedGroup, groupConvertedDeferred) {
