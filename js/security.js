@@ -51,7 +51,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
 
         if (response && response.statusCode === 200) {
           promise.resolve(response.body);
-          console.log(response.body);
+          // console.log('Security groups:', response.body);
         } else {
           if (response){
             console.log(response.statusCode);
