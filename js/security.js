@@ -47,9 +47,7 @@ exports = module.exports = function (config, sri4nodeUtils) {
           }
           
           promise.reject(err);
-        }
-
-        if (response.statusCode === 200) {
+        } else if (response.statusCode === 200) {
           promise.resolve(response.body);
         } else {
           promise.reject();
