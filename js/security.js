@@ -184,8 +184,8 @@ exports = module.exports = function (config, sri4nodeUtils) {
       })
       .fail(function () {
         deferred.reject({
-          statusCode: 403,
-          body: 'Forbidden'
+          statusCode: 503,
+          body: 'Service unavailable'
         });
       });
 
