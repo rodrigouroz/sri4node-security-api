@@ -6,8 +6,8 @@ var describe = require('mocha').describe;
 var before = require('mocha').before;
 
 var configuration = {
-  USER: '***REMOVED***',
-  PASSWORD: '***REMOVED***',
+  USER: 'app.content',
+  PASSWORD: 'xqzDgyVd2J3zYjz4',
   SECURITY_API_HOST: 'https://testapi.vsko.be'
 };
 
