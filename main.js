@@ -1,63 +1,37 @@
-var Q = require('q');
-
-var security;
-
-module.exports = function (configuration, sri4nodeUtils) {
+module.exports = function (component) {
   'use strict';
 
-  security = require('./js/security')(configuration, sri4nodeUtils);
+  const config = require('./js/config');
 
-  return function (component) {
-    return {
-      // special case: ability can be something different for checking sub resources
-      checkReadPermission: function (database, elements, me, route, param) {
-        // sanitize, always pass an array to the check function
-        if (!Array.isArray(elements)) {
-          elements = [elements];
-        }
+  // return function (component) {
+  return {
+    install: function (sriConfig) {
+      const security = require('./js/security')(config, sriConfig);
 
-        var ability;
-
-        if (!param || typeof param === 'function') {
-          ability = 'read';
-        } else {
-          ability = param;
-        }
-
-        return security.checkReadPermissionOnSet(elements, me, component, database, route, ability);
-      },
-      checkInsertPermission: function (database, elements, me) {
-        // sanitize, always pass an array to the check function
-        if (!Array.isArray(elements)) {
-          elements = [elements];
-        }
-
-        return security.checkInsertPermissionOnSet(elements, me, component, database);
-      },
-      checkUpdatePermission: function (database, elements, me, route) {
-        // sanitize, always pass an array to the check function
-        if (!Array.isArray(elements)) {
-          elements = [elements];
-        }
-
-        return security.checkUpdatePermissionOnSet(elements, me, component, database, route);
-      },
-      checkDeletePermission: function (req, res, database, me, route) {
-
-        // this is called from a secure function in sri4node, which is used on each Request
-        // we only continue if the request is a DELETE operation
-        if (req.method !== 'DELETE') {
-          return Q.fcall(function () { return true; });
-        }
-
-        var elements = {
-          path: req.route.path,
-          body: req.route.path
-        };
-
-        return security.checkDeletePermissionOnSet(elements, me, component, database, route);
+      const checkAfter = async function (tx, me, reqUrl, operation, elements) {
+        return (await security.checkPermissionOnElements(component, tx, me, reqUrl, operation, elements));
       }
-    };
-  };
 
-};
+      const checkSecure = async function (tx, me, reqUrl, verb) {
+        if (verb === 'DELETE') {
+          // DELETE is the only method which can be (and must be) security screened before execution (in a secure function)
+          console.log(reqUrl)
+          var elements = {};
+          return (await security.checkPermissionOnElements(component, tx, me, reqUrl, 'delete', elements))
+        } else {
+          return true; 
+        }
+      }
+
+      sriConfig.resources.forEach( resource => {
+        // security functions should be FIRST function in handler lists
+        resource.afterread.unshift(checkAfter)
+        resource.afterinsert.unshift(checkAfter)
+        resource.afterupdate.unshift(checkAfter)
+        resource.secure.unshift(checkSecure)
+      })
+    }
+
+  }
+  // }
+}

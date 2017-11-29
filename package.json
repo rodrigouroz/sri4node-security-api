@@ -25,10 +25,13 @@
   },
   "dependencies": {
     "needle": "^0.11.0",
+    "p-memoize": "^1.0.0",
+    "p-one": "^1.0.0",
+    "p-reduce": "^1.0.0",
     "q": "^1.4.1",
     "retry": "^0.8.0"
   },
   "engines": {
-    "node" : ">=4"
+    "node": ">=4"
   }
 }
