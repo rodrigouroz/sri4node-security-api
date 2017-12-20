@@ -8,7 +8,6 @@ const _ = require('lodash');
 const pMemoize = require('p-memoize');
 const pReduce = require('p-reduce');
 const request = require('requestretry');
-const { matches } = require('z')
 
 const memRequest = pMemoize(request, {maxAge: 5*60*1000}); // cache raw requests for 5 minutes
 
