@@ -1,4 +1,4 @@
-module.exports = function (component) {
+module.exports = function (component, app) {
   'use strict';
 
   const config = require('./js/config');
@@ -6,29 +6,24 @@ module.exports = function (component) {
   // return function (component) {
   return {
     install: function (sriConfig) {
+
+      // As the vsko security implementation depends directly on oauth, don't 
+      const oauthValve = require('vsko-authentication')(app);
+      oauthValve.install(sriConfig)
+      config.oauthValve = oauthValve
+
       const security = require('./js/security')(config, sriConfig);
 
-      const checkAfter = async function (tx, me, reqUrl, operation, elements) {
-        return (await security.checkPermissionOnElements(component, tx, me, reqUrl, operation, elements));
-      }
-
-      const checkSecure = async function (tx, me, reqUrl, verb) {
-        if (verb === 'DELETE') {
-          // DELETE is the only method which can be (and must be) security screened before execution (in a secure function)
-          console.log(reqUrl)
-          var elements = {};
-          return (await security.checkPermissionOnElements(component, tx, me, reqUrl, 'delete', elements))
-        } else {
-          return true; 
-        }
+      const check = async function (tx, sriRequest, elements, operation) {
+        await security.checkPermissionOnElements(component, tx, sriRequest, elements, operation)
       }
 
       sriConfig.resources.forEach( resource => {
         // security functions should be FIRST function in handler lists
-        resource.afterread.unshift(checkAfter)
-        resource.afterinsert.unshift(checkAfter)
-        resource.afterupdate.unshift(checkAfter)
-        resource.secure.unshift(checkSecure)
+        resource.afterread.unshift((tx, sriRequest, elements) => check(tx, sriRequest, elements, 'read'))
+        resource.afterinsert.unshift((tx, sriRequest, elements) => check(tx, sriRequest, elements, 'create'))
+        resource.afterupdate.unshift((tx, sriRequest, elements) => check(tx, sriRequest, elements, 'update'))
+        resource.beforedelete.unshift((tx, sriRequest, elements) => check(tx, sriRequest, elements, 'delete'))
       })
     }
 
