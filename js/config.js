@@ -1,16 +1,17 @@
 // main config.js file
-process.env.NODE_ENV = process.env.NODE_ENV || 'dev';
+const fs = require('fs')
 
-var config = {
-  SRI_USER: '#{SRI_USER}',     // TODO: create user and configure in application-setup (global)
-  SRI_PASSWORD: '#{SRI_PASSWORD}',
-  VSKO_API_HOST: '#{VSKO_API_HOST + "." + VSKO_DOMAIN}'
-};
+const configurationFile = 'sri4node-security-api-config.json';
 
+const config = JSON.parse(
+    fs.readFileSync(configurationFile)
+);
 
-if (process.env.NODE_ENV === 'dev') {
-  config = require('./config.local.js');
-}
+[ 'sriUser', 'sriPassword', 'vskoApiHost' ].forEach( key => {
+  if (config[key] === undefined || config[key] === '') {
+    throw `Fatal error: sri4node-security-api configuration file is lacking value for ${key}.`
+  }
+} )
 
 // export config
 module.exports = config;

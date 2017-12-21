@@ -18,8 +18,8 @@ exports = module.exports = function (config, sriConfig) {
   const sri4nodeUtils = sriConfig.utils
 
   const credentials = { 
-      'user': config.SRI_USER,     // need ***REMOVED*** configured in application-setup (global)
-      'pass': config.SRI_PASSWORD, // need ***REMOVED*** configured in       "               "
+      'user': '***REMOVED***', // config.sriUser,    TODO: reenable when sriuser is working!!
+      'pass': '***REMOVED***' //config.sriPassword, TODO: reenable when sriuser is working!!
   }
 
   async function getResourceGroups(ability, userObject, component) {
@@ -27,7 +27,7 @@ exports = module.exports = function (config, sriConfig) {
     // if userObject === null (anonymous) we ask for person '*' which means public in 'beveiliging'
     const userRef = userObject ? '/persons/' + userObject.uuid : '*'
     try {  // need SECURITY_API_HOST defined in application-setup (also global)
-      const url = config.VSKO_API_HOST + '/security/query/resources/raw?component=' + component
+      const url = config.vskoApiHost + '/security/query/resources/raw?component=' + component
                     + '&ability=' + ability
                     + '&person=' + userRef;
       // an optimalisation might be to be able to skip ability parameter and cache resources raw for all abilities together

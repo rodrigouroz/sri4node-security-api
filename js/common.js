@@ -1,6 +1,10 @@
 exports = module.exports = {
-  getHeaders: function (configuration) {
+  getHeaders: function (config) {
     'use strict';
-    return configuration.HEADERS ? configuration.HEADERS : [];
+    const headers = {}
+    if (Object.keys(config.accessToken).length > 0) {
+    	headers[config.accessToken.name] = config.accessToken.value
+    }
+    return headers
   }
 };
