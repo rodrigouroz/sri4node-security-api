@@ -1,9 +1,9 @@
 {
-  "sriUser": "***REMOVED***",
-  "sriPassword": "***REMOVED***",
+  "sriUser": "",
+  "sriPassword": "",
   "vskoApiHost": "https://testapi.katholiekonderwijs.vlaanderen",
   "accessToken": {
-    "name": "VSKO-ACCESSTOKEN-TEST",
-    "value": "***REMOVED***"
+    "name": "",
+    "value": ""
   }
 }

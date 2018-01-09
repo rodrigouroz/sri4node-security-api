@@ -18,8 +18,8 @@ exports = module.exports = function (config, sriConfig) {
   const sri4nodeUtils = sriConfig.utils
 
   const credentials = { 
-      'user': '***REMOVED***', // config.sriUser,    TODO: reenable when sriuser is working!!
-      'pass': '***REMOVED***' //config.sriPassword, TODO: reenable when sriuser is working!!
+      'user': config.sriUser,
+      'pass': config.sriPassword 
   }
 
   async function getResourceGroups(ability, userObject, component) {
