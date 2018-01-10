@@ -11,23 +11,18 @@ const request = require('requestretry');
 
 const memRequest = pMemoize(request, {maxAge: 5*60*1000}); // cache raw requests for 5 minutes
 
-exports = module.exports = function (config, sriConfig) {
+exports = module.exports = function (pluginConfig, sriConfig) {
 
   'use strict';
 
   const sri4nodeUtils = sriConfig.utils
-
-  const credentials = { 
-      'user': config.sriUser,
-      'pass': config.sriPassword 
-  }
 
   async function getResourceGroups(ability, userObject, component) {
 
     // if userObject === null (anonymous) we ask for person '*' which means public in 'beveiliging'
     const userRef = userObject ? '/persons/' + userObject.uuid : '*'
     try {  // need SECURITY_API_HOST defined in application-setup (also global)
-      const url = config.vskoApiHost + '/security/query/resources/raw?component=' + component
+      const url = pluginConfig.securityApiBase + '/security/query/resources/raw?component=' + component
                     + '&ability=' + ability
                     + '&person=' + userRef;
       // an optimalisation might be to be able to skip ability parameter and cache resources raw for all abilities together
@@ -36,7 +31,7 @@ exports = module.exports = function (config, sriConfig) {
       debug('Fetch raw resources at:')
       debug(url)
 
-      const res = await memRequest({url: url, auth: credentials, headers: common.getHeaders(config), json:true})
+      const res = await memRequest({url: url, auth: pluginConfig.auth, headers: pluginConfig.headers, json:true})
       if (res.statusCode!=200) {
         throw `security requests returned unexpected status ${res.statusCode}: ${res.body}`
       }
@@ -118,7 +113,7 @@ exports = module.exports = function (config, sriConfig) {
       // Notify the oauthValve that the current request is forbidden. The valve might act
       // according to this information by throwing an SriError object (for example a redirect to a 
       // login page or an error in case of a bad authentication token). 
-      config.oauthValve.handleForbiddenBySecurity(sriRequest)
+      pluginConfig.oauthValve.handleForbiddenBySecurity(sriRequest)
 
       // If the valve did not throw an SriError, the default response 403 Forbidden is returned.
       throw new SriError({status: 403})

@@ -1,7 +1,5 @@
-module.exports = function (component, app) {
+module.exports = function (component, app, pluginConfig) {
   'use strict';
-
-  const config = require('./js/config');
 
   // return function (component) {
   return {
