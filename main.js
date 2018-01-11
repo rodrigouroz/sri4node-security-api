@@ -10,7 +10,7 @@ module.exports = function (component, app, pluginConfig) {
       oauthValve.install(sriConfig)
       pluginConfig.oauthValve = oauthValve
 
-      const security = require('./js/security')(config, sriConfig);
+      const security = require('./js/security')(pluginConfig, sriConfig);
 
       const check = async function (tx, sriRequest, elements, operation) {
         await security.checkPermissionOnElements(component, tx, sriRequest, elements, operation)

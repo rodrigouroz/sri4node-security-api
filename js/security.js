@@ -1,7 +1,7 @@
 var utils = require('./utils');
 var urlModule = require('url');
 
-const { SriError, debug } = require('../../sri4node/js/common.js')
+const { SriError, debug } = require('../../../sri4node/js/common.js')
 
 const _ = require('lodash');
 const pMemoize = require('p-memoize');
