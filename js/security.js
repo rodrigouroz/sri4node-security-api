@@ -1,4 +1,3 @@
-var common = require('./common');
 var utils = require('./utils');
 var urlModule = require('url');
 
