@@ -18,10 +18,10 @@ module.exports = function (component, app, pluginConfig) {
 
       sriConfig.resources.forEach( resource => {
         // security functions should be FIRST function in handler lists
-        resource.afterread.unshift((tx, sriRequest, elements) => check(tx, sriRequest, elements, 'read'))
-        resource.afterinsert.unshift((tx, sriRequest, elements) => check(tx, sriRequest, elements, 'create'))
-        resource.afterupdate.unshift((tx, sriRequest, elements) => check(tx, sriRequest, elements, 'update'))
-        resource.beforedelete.unshift((tx, sriRequest, elements) => check(tx, sriRequest, elements, 'delete'))
+        resource.afterRead.unshift((tx, sriRequest, elements) => check(tx, sriRequest, elements, 'read'))
+        resource.afterInsert.unshift((tx, sriRequest, elements) => check(tx, sriRequest, elements, 'create'))
+        resource.afterUpdate.unshift((tx, sriRequest, elements) => check(tx, sriRequest, elements, 'update'))
+        resource.beforeDelete.unshift((tx, sriRequest, elements) => check(tx, sriRequest, elements, 'delete'))
       })
     }
 
