@@ -47,7 +47,7 @@ exports = module.exports = function (pluginConfig, sriConfig) {
   const checkRawResourceForKeys = async (tx, rawEntry, keys) => {
     if (utils.isPermalink(rawEntry)) {
       const permalinkKey = utils.getKeyFromPermalink(rawEntry)
-      if (keys.include(permalinkKey)) {
+      if (keys.includes(permalinkKey)) {
         return [ permalinkKey ]
       } else {
         return []
