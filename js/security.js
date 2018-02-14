@@ -1,7 +1,7 @@
 var utils = require('./utils');
 var urlModule = require('url');
 
-const { SriError, debug } = require('../../../sri4node/js/common.js')
+const { SriError, debug, typeToMapping } = require('../../../sri4node/js/common.js')
 
 const _ = require('lodash');
 const pMemoize = require('p-memoize');
@@ -56,8 +56,8 @@ exports = module.exports = function (pluginConfig, sriConfig) {
       const rawUrl = urlModule.parse(rawEntry, true);
       const query = sri4nodeUtils.prepareSQL('check-resource-exist');
 
-      // there is no guarantee that the group is mapped in the database
-      sri4nodeUtils.convertListResourceURLToSQL(rawUrl.pathname, rawUrl.query, false, tx, query)
+      // there is no guarantee that the group is mapped in the database      
+      sri4nodeUtils.convertListResourceURLToSQL(typeToMapping(rawUrl.pathname), rawUrl.query, false, tx, query)
       query.sql(' AND \"key\" IN (').array(keys).sql(')');
 
       const rows = await sri4nodeUtils.executeSQL(tx, query)
