@@ -1,7 +1,7 @@
 var utils = require('./utils');
 var urlModule = require('url');
 
-const { SriError, debug, typeToMapping } = require('../../../sri4node/js/common.js')
+const { SriError, debug, typeToMapping } = require('sri4node/js/common.js')
 
 const _ = require('lodash');
 const pMemoize = require('p-memoize');
@@ -81,8 +81,7 @@ exports = module.exports = function (pluginConfig, sriConfig) {
 
     const resourcesRaw = (await getResourceGroups(operation, sriRequest.userObject, component))
 
-    const relevantRawResources = resourcesRaw.map( rawEntry => rawEntry.toLowerCase() )    
-                                             .filter( rawEntry => (utils.getResourceFromUrl(rawEntry) === resourceType) )
+    const relevantRawResources = resourcesRaw.filter( rawEntry => (utils.getResourceFromUrl(rawEntry) === resourceType) )
 
     const superUserResource = resourceType + (sriRequest.containsDeleted ? '?$$meta.deleted=any' : '')
     if (relevantRawResources.includes(superUserResource)) {
