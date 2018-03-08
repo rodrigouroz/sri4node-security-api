@@ -16,32 +16,6 @@ exports = module.exports = function (pluginConfig, sriConfig) {
 
   const sri4nodeUtils = sriConfig.utils
 
-  async function getResourceGroups(ability, userObject, component) {
-
-    // if userObject === null (anonymous) we ask for person '*' which means public in 'beveiliging'
-    const userRef = userObject ? '/persons/' + userObject.uuid : '*'
-    try {  // need SECURITY_API_HOST defined in application-setup (also global)
-      const url = pluginConfig.securityApiBase + '/security/query/resources/raw?component=' + component
-                    + '&ability=' + ability
-                    + '&person=' + userRef;
-      // an optimalisation might be to be able to skip ability parameter and cache resources raw for all abilities together
-      // (needs change in security API)
-
-      debug('Fetch raw resources at:')
-      debug(url)
-
-      const res = await memRequest({url: url, auth: pluginConfig.auth, headers: pluginConfig.headers, json:true})
-      if (res.statusCode!=200) {
-        throw `security requests returned unexpected status ${res.statusCode}: ${res.body}`
-      }
-      return res.body
-    } catch (error) {
-      console.log('____________________________ E R R O R ____________________________________________________') 
-      console.log(error)
-      console.log('___________________________________________________________________________________________') 
-      throw new SriError({status: 503, errors: [{ code: 'security.unavailable',  msg: 'Retrieving security information failed.' }]})
-    }
-  }
 
 
   const checkRawResourceForKeys = async (tx, rawEntry, keys) => {
@@ -66,6 +40,37 @@ exports = module.exports = function (pluginConfig, sriConfig) {
   }
 
 
+  function handleNotAllowed(sriRequest) {
+      // Notify the oauthValve that the current request is forbidden. The valve might act
+      // according to this information by throwing an SriError object (for example a redirect to a 
+      // login page or an error in case of a bad authentication token). 
+      pluginConfig.oauthValve.handleForbiddenBySecurity(sriRequest)
+
+      // If the valve did not throw an SriError, the default response 403 Forbidden is returned.
+      throw new SriError({status: 403})    
+  }
+
+
+  async function doSecurityRequest(url) {
+    try {
+      debug(`Querying security at: ${url}`)
+
+      const res = await memRequest({url: url, auth: pluginConfig.auth, headers: pluginConfig.headers, json:true})
+      if (res.statusCode!=200) {
+        throw `security request returned unexpected status ${res.statusCode}: ${res.body}`
+      }
+      return res.body
+    } catch (error) {
+      console.log('____________________________ E R R O R ____________________________________________________') 
+      console.log(error)
+      console.log('___________________________________________________________________________________________') 
+      throw new SriError({status: 503, errors: [{ code: 'security.unavailable',  msg: 'Retrieving security information failed.' }]})
+    }    
+  }
+
+
+
+
 
   async function checkPermissionOnElements(component, tx, sriRequest, elements, operation) {
     const resourceTypes = _.uniq(elements.map( e => utils.getResourceFromUrl(e.permalink) ))
@@ -79,7 +84,16 @@ exports = module.exports = function (pluginConfig, sriConfig) {
 
     const [ resourceType ] = resourceTypes
 
-    const resourcesRaw = (await getResourceGroups(operation, sriRequest.userObject, component))
+    // if userObject === null (anonymous) we ask for person '*' which means public in 'beveiliging'
+    const userRef = sriRequest.userObject ? '/persons/' + sriRequest.userObject.uuid : '*'
+    const url = pluginConfig.securityApiBase + '/security/query/resources/raw?component=' + component
+                  + '&ability=' + operation
+                  + '&person=' + userRef;
+    // an optimalisation might be to be able to skip ability parameter and cache resources raw for all abilities together
+    // (needs change in security API)
+
+    const resourcesRaw = await doSecurityRequest(url)
+
 
     const relevantRawResources = resourcesRaw.filter( rawEntry => (utils.getResourceFromUrl(rawEntry) === resourceType) )
 
@@ -107,19 +121,28 @@ exports = module.exports = function (pluginConfig, sriConfig) {
 
     if (keysNotMatched.length > 0) {
       debug(`keysNotMatched: ${keysNotMatched}`)
+      handleNotAllowed(sriRequest)
+    }
+  }
 
-      // Notify the oauthValve that the current request is forbidden. The valve might act
-      // according to this information by throwing an SriError object (for example a redirect to a 
-      // login page or an error in case of a bad authentication token). 
-      pluginConfig.oauthValve.handleForbiddenBySecurity(sriRequest)
+  async function customCheck(component, tx, sriRequest, ability, resource) {
+    // if userObject === null (anonymous) we ask for person '*' which means public in 'beveiliging'
+    const userRef = sriRequest.userObject ? '/persons/' + sriRequest.userObject.uuid : '*'
+    const url = pluginConfig.securityApiBase + '/security/query/allowed?component=' + component
+                  + '&person=' + userRef
+                  + '&ability=' + ability
+                  + '&resource=' + resource;
+    const result = await doSecurityRequest(url)
 
-      // If the valve did not throw an SriError, the default response 403 Forbidden is returned.
-      throw new SriError({status: 403})
+    if (result !== true) {
+      debug(`not allowed`)
+      handleNotAllowed(sriRequest)
     }
   }
 
   return { 
-    checkPermissionOnElements
+    checkPermissionOnElements,
+    customCheck
   }
 
 };

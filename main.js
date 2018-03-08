@@ -1,6 +1,7 @@
 module.exports = function (component, app, pluginConfig) {
   'use strict';
 
+  let security;
   // return function (component) {
   return {
     install: function (sriConfig) {
@@ -10,7 +11,7 @@ module.exports = function (component, app, pluginConfig) {
       oauthValve.install(sriConfig)
       pluginConfig.oauthValve = oauthValve
 
-      const security = require('./js/security')(pluginConfig, sriConfig);
+      security = require('./js/security')(pluginConfig, sriConfig);
 
       const check = async function (tx, sriRequest, elements, operation) {
         await security.checkPermissionOnElements(component, tx, sriRequest, elements, operation)
@@ -23,7 +24,9 @@ module.exports = function (component, app, pluginConfig) {
         resource.afterUpdate.unshift((tx, sriRequest, elements) => check(tx, sriRequest, elements, 'update'))
         resource.beforeDelete.unshift((tx, sriRequest, elements) => check(tx, sriRequest, elements, 'delete'))
       })
-    }
+    },
+
+    customCheck: function (tx, sriRequest, ability, resource) { return security.customCheck(component, tx, sriRequest, ability, resource) }
 
   }
   // }
