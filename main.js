@@ -26,7 +26,8 @@ module.exports = function (component, app, pluginConfig) {
       })
     },
 
-    customCheck: function (tx, sriRequest, ability, resource) { return security.customCheck(component, tx, sriRequest, ability, resource) }
+    customCheck: function (tx, sriRequest, ability, resource) { return security.customCheck(component, tx, sriRequest, ability, resource) },
+    handleNotAllowed: function (sriRequest) { return security.handleNotAllowed(sriRequest) }
 
   }
   // }

@@ -1,14 +1,15 @@
-var utils = require('./utils');
-var urlModule = require('url');
-
-const { SriError, debug, typeToMapping } = require('sri4node/js/common.js')
-
+const util = require('util');
+const urlModule = require('url');
 const _ = require('lodash');
 const pMemoize = require('p-memoize');
 const pReduce = require('p-reduce');
 const request = require('requestretry');
 
+const { SriError, debug, typeToMapping, getPersonFromSriRequest } = require('sri4node/js/common.js')
+
 const memRequest = pMemoize(request, {maxAge: 5*60*1000}); // cache raw requests for 5 minutes
+
+var utils = require('./utils');
 
 exports = module.exports = function (pluginConfig, sriConfig) {
 
@@ -57,7 +58,7 @@ exports = module.exports = function (pluginConfig, sriConfig) {
 
       const res = await memRequest({url: url, auth: pluginConfig.auth, headers: pluginConfig.headers, json:true})
       if (res.statusCode!=200) {
-        throw `security request returned unexpected status ${res.statusCode}: ${res.body}`
+        throw `security request returned unexpected status ${res.statusCode}: ${util.inspect(res.body)}`
       }
       return res.body
     } catch (error) {
@@ -83,12 +84,9 @@ exports = module.exports = function (pluginConfig, sriConfig) {
     }
 
     const [ resourceType ] = resourceTypes
-
-    // if userObject === null (anonymous) we ask for person '*' which means public in 'beveiliging'
-    const userRef = sriRequest.userObject ? '/persons/' + sriRequest.userObject.uuid : '*'
     const url = pluginConfig.securityApiBase + '/security/query/resources/raw?component=' + component
                   + '&ability=' + operation
-                  + '&person=' + userRef;
+                  + '&person=' + getPersonFromSriRequest(sriRequest);
     // an optimalisation might be to be able to skip ability parameter and cache resources raw for all abilities together
     // (needs change in security API)
 
@@ -126,10 +124,8 @@ exports = module.exports = function (pluginConfig, sriConfig) {
   }
 
   async function customCheck(component, tx, sriRequest, ability, resource) {
-    // if userObject === null (anonymous) we ask for person '*' which means public in 'beveiliging'
-    const userRef = sriRequest.userObject ? '/persons/' + sriRequest.userObject.uuid : '*'
     const url = pluginConfig.securityApiBase + '/security/query/allowed?component=' + component
-                  + '&person=' + userRef
+                  + '&person=' + getPersonFromSriRequest(sriRequest)
                   + '&ability=' + ability
                   + '&resource=' + resource;
     const result = await doSecurityRequest(url)
@@ -142,7 +138,8 @@ exports = module.exports = function (pluginConfig, sriConfig) {
 
   return { 
     checkPermissionOnElements,
-    customCheck
+    customCheck,
+    handleNotAllowed
   }
 
 };
