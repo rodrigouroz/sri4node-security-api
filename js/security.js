@@ -127,7 +127,7 @@ exports = module.exports = function (pluginConfig, sriConfig) {
     const url = pluginConfig.securityApiBase + '/security/query/allowed?component=' + component
                   + '&person=' + getPersonFromSriRequest(sriRequest)
                   + '&ability=' + ability
-                  + '&resource=' + resource;
+                  + (resource !== undefined ? '&resource=' + resource : '');
     const result = await doSecurityRequest(url)
 
     if (result !== true) {
