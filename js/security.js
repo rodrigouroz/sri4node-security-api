@@ -5,7 +5,7 @@ const pMemoize = require('p-memoize');
 const pReduce = require('p-reduce');
 const request = require('requestretry');
 
-const { SriError, debug, typeToMapping, getPersonFromSriRequest } = require('sri4node/js/common.js')
+const { SriError, debug, typeToMapping, getPersonFromSriRequest, tableFromMapping } = require('sri4node/js/common.js')
 
 const memRequest = pMemoize(request, {maxAge: 5*60*1000}); // cache raw requests for 5 minutes
 
@@ -32,8 +32,9 @@ exports = module.exports = function (pluginConfig, sriConfig) {
       const query = sri4nodeUtils.prepareSQL('check-resource-exist');
 
       // there is no guarantee that the group is mapped in the database      
-      sri4nodeUtils.convertListResourceURLToSQL(typeToMapping(rawUrl.pathname), rawUrl.query, false, tx, query)
-      query.sql(' AND \"key\" IN (').array(keys).sql(')');
+      const mapping = typeToMapping(rawUrl.pathname);
+      sri4nodeUtils.convertListResourceURLToSQL(mapping, rawUrl.query, false, tx, query)
+      query.sql(' AND \"' + tableFromMapping(mapping) +'\".\"key\" IN (').array(keys).sql(')');
 
       const rows = await sri4nodeUtils.executeSQL(tx, query)
       return rows.map( r => r.key )  // TODO: verify
