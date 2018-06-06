@@ -1,20 +1,25 @@
+const util = require('util')
+
 module.exports = function (component, app, pluginConfig) {
   'use strict';
 
   let security;
-  // return function (component) {
   return {
-    install: function (sriConfig) {
-
+    init: function (sriConfig) {
       // As the vsko security implementation depends directly on oauth, don't 
       const oauthValve = require('vsko-authentication')(app);
       oauthValve.install(sriConfig)
       pluginConfig.oauthValve = oauthValve
 
       security = require('./js/security')(pluginConfig, sriConfig);
+    },
+
+    install: function (sriConfig) {
+
+      init(sriConfig);
 
       const check = async function (tx, sriRequest, elements, operation) {
-        await security.checkPermissionOnElements(component, tx, sriRequest, elements, operation)
+        await security.checkPermissionOnElements(defaultComponent, tx, sriRequest, elements, operation)
       }
 
       sriConfig.resources.forEach( resource => {
@@ -26,9 +31,15 @@ module.exports = function (component, app, pluginConfig) {
       })
     },
 
-    customCheck: function (tx, sriRequest, ability, resource) { return security.customCheck(component, tx, sriRequest, ability, resource) },
-    handleNotAllowed: function (sriRequest) { return security.handleNotAllowed(sriRequest) }
+    customCheck: function (tx, sriRequest, ability, resource, component) { 
+        if (component === undefined) {
+          component = defaultComponent
+        }
+        return security.customCheck(tx, sriRequest, ability, resource, component)
+      },
+    customCheckBatch: function (tx, sriRequest, elements) { return security.customCheckBatch(tx, sriRequest, elements) },
+    handleNotAllowed: function (sriRequest) { return security.handleNotAllowed(sriRequest) },
 
+    getOauthValve: () => pluginConfig.oauthValve
   }
-  // }
 }
