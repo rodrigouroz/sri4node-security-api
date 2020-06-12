@@ -19,7 +19,7 @@
   "license": "UNLICENSED",
   "homepage": "https://github.com/rodrigouroz/sri4node-security-api",
   "devDependencies": {
-    "eslint": "^1.7.3",
+    "eslint": "^4.18.2",
     "mocha": "^2.3.3",
     "nock": "^2.17.0"
   },
